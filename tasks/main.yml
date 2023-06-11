@@ -51,19 +51,21 @@
         purge: yes
 
 - name: "Create Groups"
-  loop: "{{ bootstrap_role_user }}"
+  when: prepare_host_users is defined
+  loop: "{{ prepare_host_users }}"
   loop_control:
     loop_var: user
   ansible.builtin.group:
-    name: "{{ user.grtoup }}"
+    name: "{{ user.group }}"
     state: present
 
 - name: "Create Users"
-  loop: "{{ bootstrap_role_user }}"
+  when: prepare_host_users is defined
+  loop: "{{ prepare_host_users }}"
   loop_control:
     loop_var: user
   ansible.builtin.user:
-    name: "{{ user.name }}"
+    name: "{{ user.login }}"
     group: "{{ user.group }}"
     state: present
 
