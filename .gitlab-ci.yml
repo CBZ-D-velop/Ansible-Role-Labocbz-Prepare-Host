@@ -102,17 +102,17 @@ include:
 #### yaml-lint
 ############################################
 
-yaml_lint_roles:
+yaml_lint:
   <<: *yaml_lint
   variables:
     path: "./*/*.yml"
 
-yaml_lint_roles_molecule:
+yaml_lint_molecule:
   <<: *yaml_lint
   variables:
     path: "./molecule/*/*.yml"
 
-yaml_lint_roles_inventories:
+yaml_lint_inventories:
   <<: *yaml_lint
   variables:
     path: "./tests/inventory/hosts.yml ./tests/inventory/*/*.yml"
@@ -121,18 +121,18 @@ yaml_lint_roles_inventories:
 ##### jinja2-lint
 #############################################
 
-jinja2_lint_roles:
+jinja2_lint:
   <<: *jinja2_lint
 
 ############################################
 #### bootstrap_role
 ############################################
 
-ansible_lint_role_bootstrap_role:
+ansible_lint:
   <<: *ansible_lint_role
   variables:
     role: "bootstrap_role"
     namespace: "labocbz"
 
-molecule_test_role_bootstrap_role:
-  <<: *molecule_test_role
+molecule_test:
+  <<: *molecule_test
