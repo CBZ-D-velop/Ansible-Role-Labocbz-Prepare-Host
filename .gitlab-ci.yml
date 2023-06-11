@@ -38,7 +38,7 @@ variables:
 # Then we need to lint on role's files with a JINJA2 vision
 # Because if one of the templates files doesn't respect JINJA2 conventions,
 # we dont need to test rest of the pipeline
-.jinja2_lint: &jinja2_lint
+.jinja2_lint_role: &jinja2_lint_role
   stage: jinja2-lint
   image:
     name: $DOCKER_IMAGE_DEBIAN_JINJA
@@ -102,7 +102,7 @@ include:
 #### yaml-lint
 ############################################
 
-yaml_lint:
+yaml_lint_role:
   <<: *yaml_lint
   variables:
     path: "./*/*.yml"
@@ -122,7 +122,7 @@ yaml_lint_inventories:
 #############################################
 
 jinja2_lint:
-  <<: *jinja2_lint
+  <<: *jinja2_lint_role
 
 ############################################
 #### bootstrap_role
@@ -135,4 +135,4 @@ ansible_lint:
     namespace: "labocbz"
 
 molecule_test:
-  <<: *molecule_test
+  <<: *molecule_test_role
