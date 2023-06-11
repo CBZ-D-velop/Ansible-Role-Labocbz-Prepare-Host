@@ -1,0 +1,268 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+
+stages:
+- gitlab-test
+- yaml-lint
+- jinja2-lint
+- ansible-roles-lint
+- molecule-roles-test
+- ansible-playbooks-lint
+- molecule-playbooks-test
+
+variables:
+  DOCKER_NEXUS_ADDRESS: "nexus-manager.net3107.storages.labo-cbz.net:8082"
+  DOCKER_IMAGE_DEBIAN_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/debian-11-ansible:v3.0"
+  DOCKER_IMAGE_DOCKER_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/docker-ansible:v3.0"
+  DOCKER_IMAGE_DEBIAN_JINJA: "$DOCKER_NEXUS_ADDRESS/tuxmartin/jinja2-lint:2022-05-24"
+  PIPELINE_SCENARIO_NAME: "gitlabci"
+
+###############################################################################
+#################### actions
+###############################################################################
+
+# To start, we need to lint role's files with a YML vision
+# Because if one of the files doesn't respect YML conventions,
+# we dont need to test rest of the pipeline
+.yaml_lint: &yaml_lint
+  stage: yaml-lint
+  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  script:
+    - yamllint -c ./.yamllint $path # Here mains files
+  allow_failure: false
+  retry: 2
+
+# Then we need to lint on role's files with a JINJA2 vision
+# Because if one of the templates files doesn't respect JINJA2 conventions,
+# we dont need to test rest of the pipeline
+.jinja2_lint: &jinja2_lint
+  stage: jinja2-lint
+  image:
+    name: $DOCKER_IMAGE_DEBIAN_JINJA
+    entrypoint: ["/bin/sh", "-c"]
+  script:
+    # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
+    # This probably happens due to gitlab-runner mounting the git repo into the container
+    - chmod o-w .
+    - >
+      find ./roles/*/templates/*.j2 \( -name '*' ! -iname ".*" \)
+      -print0 | sort --zero-terminated | xargs -0 -I{} sh -c  '/usr/bin/python /j2lint.py {}'
+  allow_failure: false
+  retry: 2
+
+.ansible_lint_role: &ansible_lint_role
+  stage: ansible-roles-lint
+  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  script:
+    - ansible-lint --config=./roles/$namespace.$role/.ansible-lint ./roles/$namespace.$role/
+  allow_failure: false
+  retry: 2
+
+.molecule_test_role: &molecule_test_role
+  stage: molecule-roles-test
+  image:
+    name: $DOCKER_IMAGE_DOCKER_ANSIBLE
+  variables:
+    PY_COLORS: '1'
+    ANSIBLE_FORCE_COLOR: '1'
+  #before_script:
+    #- apk add --no-cache
+    #  python3 python3-dev py3-pip gcc git curl build-base
+    #  autoconf automake py3-cryptography linux-headers
+    #  musl-dev libffi-dev openssl-dev openssh py3-yaml
+    #- python3 -m pip install ansible molecule[docker]==4.0.4
+    #- docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
+    #- docker info
+    #- ansible-galaxy collection install community.general
+    #- ansible-galaxy collection install community.docker
+  script:
+    - docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
+    - docker info
+    - python3 -m compileall /usr/lib/python3 -qq
+    - python3 --version
+    - ansible --version
+    - molecule --version
+    # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
+    # This probably happens due to gitlab-runner mounting the git repo into the container
+    - cp ./.ansible.cfg /root/.ansible.cfg
+    - cd ./roles/$namespace.$role
+    - chmod o-w .
+    - molecule test --scenario-name $PIPELINE_SCENARIO_NAME
+  allow_failure: false
+  retry: 2
+
+.ansible_lint_playbook: &ansible_lint_playbook
+  stage: ansible-playbooks-lint
+  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  script:
+    - ansible-lint --config=./playbooks/$namespace.$playbook/.ansible-lint ./playbooks/$namespace.$playbook/
+  allow_failure: false
+  retry: 2
+
+.molecule_test_playbook: &molecule_test_playbook
+  stage: molecule-playbooks-test
+  image:
+    name: $DOCKER_IMAGE_DOCKER_ANSIBLE
+  variables:
+    PY_COLORS: '1'
+    ANSIBLE_FORCE_COLOR: '1'
+  #before_script:
+    #- apk add --no-cache
+    #  python3 python3-dev py3-pip gcc git curl build-base
+    #  autoconf automake py3-cryptography linux-headers
+    #  musl-dev libffi-dev openssl-dev openssh py3-yaml
+    #- python3 -m pip install ansible molecule[docker]==4.0.4
+    #- docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
+    #- docker info
+    #- ansible-galaxy collection install community.general
+    #- ansible-galaxy collection install community.docker
+  script:
+    - docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
+    - docker info
+    - python3 -m compileall /usr/lib/python3 -qq
+    - python3 --version
+    - ansible --version
+    - molecule --version
+    # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
+    # This probably happens due to gitlab-runner mounting the git repo into the container
+    - cp ./.ansible.cfg /root/.ansible.cfg
+    - cd ./playbooks/$namespace.$playbook
+    - chmod o-w .
+    - molecule test --scenario-name $PIPELINE_SCENARIO_NAME
+  allow_failure: false
+  retry: 2
+
+###############################################################################
+#################### CI JOBS
+###############################################################################
+
+############################################
+#### gitlab-test
+############################################
+
+# As a GitLab ci, we use the default template :)
+sast:
+  stage: gitlab-test
+include:
+- template: Security/SAST.gitlab-ci.yml
+  allow_failure: false
+
+############################################
+#### yaml-lint
+############################################
+
+yaml_lint_roles:
+  <<: *yaml_lint
+  variables:
+    path: "./roles/*/*/*.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+yaml_lint_playbooks:
+  <<: *yaml_lint
+  variables:
+    path: "./playbooks/*/playbook.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+yaml_lint_roles_molecule:
+  <<: *yaml_lint
+  variables:
+    path: "./roles/*/molecule/*/*.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+yaml_lint_playbooks_molecule:
+  <<: *yaml_lint
+  variables:
+    path: "./playbooks/*/molecule/*/*.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+yaml_lint_roles_inventories:
+  <<: *yaml_lint
+  variables:
+    path: "./roles/*/tests/inventory/hosts.yml ./roles/*/tests/inventory/*/*.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+yaml_lint_playbooks_inventories:
+  <<: *yaml_lint
+  variables:
+    path: "./playbooks/*/tests/inventory/hosts.yml ./roles/*/tests/inventory/*/*.yml"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+#############################################
+##### jinja2-lint
+#############################################
+
+jinja2_lint_roles:
+  <<: *jinja2_lint
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+############################################
+#### ansible-roles-lint && molecule
+############################################
+
+############################################
+#### bootstrap_role
+############################################
+
+ansible_lint_role_bootstrap_role:
+  <<: *ansible_lint_role
+  variables:
+    role: "bootstrap_role"
+    namespace: "labocbz"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role-bootstrap-role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+molecule_test_role_bootstrap_role:
+  <<: *molecule_test_role
+  variables:
+    role: "bootstrap_role"
+    namespace: "labocbz"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /role-bootstrap-role/
+    - if: $CI_COMMIT_BRANCH =~ /playbook/
+    - if: $CI_COMMIT_BRANCH =~ /improvement/
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"

@@ -1,0 +1,77 @@
+---
+- name: "Update the host"
+  block:
+    - name: "Update / clean and dist-upgrade the host"
+      ansible.builtin.package:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+        upgrade: dist
+        autoclean: yes
+        autoremove: yes
+
+    - name: "Check if reboot is required or not"
+      register: reboot_required_file
+      ansible.builtin.stat:
+        path: /var/run/reboot_required
+
+    - name: Reboot the host if required
+      when: reboot_required_file.stat.exists
+      ansible.builtin.reboot:
+        msg: "(ANSIBLE): The host have to be rebooted."
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
+- name: "Install and remove packages"
+  block:
+    - name: "Install packages"
+      register: output
+      changed_when: output.changed != true
+      ansible.builtin.package:
+        update_cache: yes
+        name: "{{ prepare_host_packages_installed }}"
+
+    - name: "Remove packages and config files"
+      register: output
+      changed_when: output.changed != true
+      when: prepare_host_packages_removed is defined
+      ansible.builtin.package:
+        state: absent
+        purge: yes
+        name: "{{ prepare_host_packages_removed }}"
+
+    - name: "Perform an autoremove after operations"
+      register: output
+      changed_when: output.changed != true
+      ansible.builtin.package:
+        autoremove: yes
+        purge: yes
+
+- name: "Create Groups"
+  loop: "{{ bootstrap_role_user }}"
+  loop_control:
+    loop_var: user
+  ansible.builtin.group:
+    name: "{{ user.grtoup }}"
+    state: present
+
+- name: "Create Users"
+  loop: "{{ bootstrap_role_user }}"
+  loop_control:
+    loop_var: user
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    group: "{{ user.group }}"
+    state: present
+
+- name: "Import sudoers"
+  when: prepare_host_sudoers is defined
+  ansible.builtin.template:
+    src: "templates/sudoers.j2"
+    dest: "/etc/sudoers"
+    group: "root"
+    owner: "root"
+    mode: 0440
