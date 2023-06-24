@@ -51,7 +51,7 @@ variables:
 
 .ansible_lint: &ansible_lint
   stage: ansible-lint
-  image: DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
+  image: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - ansible-lint --config=./.ansible-lint ./*
   allow_failure: false
