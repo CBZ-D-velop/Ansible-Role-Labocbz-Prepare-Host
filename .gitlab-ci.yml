@@ -25,7 +25,7 @@ variables:
 # we dont need to test rest of the pipeline
 .yaml_lint: &yaml_lint
   stage: yaml-lint
-  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  image: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - yamllint -c ./.yamllint $path # Here mains files
   allow_failure: false
@@ -37,7 +37,7 @@ variables:
 .jinja2_lint: &jinja2_lint
   stage: jinja2-lint
   image:
-    name: $DOCKER_IMAGE_DEBIAN_JINJA
+    name: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_JINJA
     entrypoint: ["/bin/sh", "-c"]
   script:
     # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
@@ -51,7 +51,7 @@ variables:
 
 .ansible_lint: &ansible_lint
   stage: ansible-lint
-  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  image: DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - ansible-lint --config=./.ansible-lint ./*
   allow_failure: false
@@ -60,7 +60,7 @@ variables:
 .molecule_test: &molecule_test
   stage: molecule-test
   image:
-    name: $DOCKER_IMAGE_DOCKER_ANSIBLE
+    name: DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DOCKER_ANSIBLE
   variables:
     PY_COLORS: '1'
     ANSIBLE_FORCE_COLOR: '1'
