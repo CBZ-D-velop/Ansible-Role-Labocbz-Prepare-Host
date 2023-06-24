@@ -2,9 +2,7 @@
 inv_prepare_host_users:
   - login: "testuser"
     group: "group1"
-
-inv_prepare_host_sudoers:
-  - "testuser"
+    sudoer: true
 
 inv_prepare_host_packages_removed:
   - "vim*"

@@ -10,14 +10,10 @@ stages:
 - gitlab-test
 - yaml-lint
 - jinja2-lint
-- ansible-roles-lint
-- molecule-roles-test
+- ansible-lint
+- molecule-test
 
 variables:
-  DOCKER_NEXUS_ADDRESS: "nexus-manager.net3107.storages.labo-cbz.net:8082"
-  DOCKER_IMAGE_DEBIAN_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/debian-11-ansible:v3.0"
-  DOCKER_IMAGE_DOCKER_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/docker-ansible:v3.0"
-  DOCKER_IMAGE_DEBIAN_JINJA: "$DOCKER_NEXUS_ADDRESS/tuxmartin/jinja2-lint:2022-05-24"
   PIPELINE_SCENARIO_NAME: "gitlabci"
 
 ###############################################################################
@@ -29,7 +25,7 @@ variables:
 # we dont need to test rest of the pipeline
 .yaml_lint: &yaml_lint
   stage: yaml-lint
-  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+  image: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - yamllint -c ./.yamllint $path # Here mains files
   allow_failure: false
@@ -38,10 +34,10 @@ variables:
 # Then we need to lint on role's files with a JINJA2 vision
 # Because if one of the templates files doesn't respect JINJA2 conventions,
 # we dont need to test rest of the pipeline
-.jinja2_lint_role: &jinja2_lint_role
+.jinja2_lint: &jinja2_lint
   stage: jinja2-lint
   image:
-    name: $DOCKER_IMAGE_DEBIAN_JINJA
+    name: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_JINJA
     entrypoint: ["/bin/sh", "-c"]
   script:
     # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
@@ -53,28 +49,24 @@ variables:
   allow_failure: false
   retry: 2
 
-.ansible_lint_role: &ansible_lint_role
-  stage: ansible-roles-lint
-  image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
+.ansible_lint: &ansible_lint
+  stage: ansible-lint
+  image: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - ansible-lint --config=./.ansible-lint ./*
   allow_failure: false
   retry: 2
 
-.molecule_test_role: &molecule_test_role
-  stage: molecule-roles-test
+.molecule_test: &molecule_test
+  stage: molecule-test
   image:
-    name: $DOCKER_IMAGE_DOCKER_ANSIBLE
+    name: $DOCKER_NEXUS_ADDRESS/$DOCKER_IMAGE_DOCKER_ANSIBLE
   variables:
     PY_COLORS: '1'
     ANSIBLE_FORCE_COLOR: '1'
   script:
     - docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
-    - docker info
     - python3 -m compileall /usr/lib/python3 -qq
-    - python3 --version
-    - ansible --version
-    - molecule --version
     # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
     # This probably happens due to gitlab-runner mounting the git repo into the container
     - cp ./.ansible.cfg /root/.ansible.cfg
@@ -102,7 +94,7 @@ include:
 #### yaml-lint
 ############################################
 
-yaml_lint_role:
+yaml_lint:
   <<: *yaml_lint
   variables:
     path: "./*/*.yml"
@@ -122,17 +114,14 @@ yaml_lint_inventories:
 #############################################
 
 jinja2_lint:
-  <<: *jinja2_lint_role
+  <<: *jinja2_lint
 
 ############################################
 #### bootstrap_role
 ############################################
 
 ansible_lint:
-  <<: *ansible_lint_role
-  variables:
-    role: "bootstrap_role"
-    namespace: "labocbz"
+  <<: *ansible_lint
 
 molecule_test:
-  <<: *molecule_test_role
+  <<: *molecule_test

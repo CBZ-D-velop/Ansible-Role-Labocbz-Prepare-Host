@@ -13,8 +13,11 @@
 ![Tag: Ansible](https://img.shields.io/badge/Tech-Ansible-orange)
 ![Tag: Debian](https://img.shields.io/badge/Tech-Debian-orange)
 ![Tag: Prepare](https://img.shields.io/badge/Tech-Prepare-orange)
+![Tag: Sudoers](https://img.shields.io/badge/Tech-Sudoers-orange)
 
 An Ansible role to prepare your host to work with Ansible.
+
+The Host Preparation role automates the process of preparing a target host for desired configurations. It handles package management, user and group creation, and sudoer management. This role helps streamline the initial setup process and ensures consistency across hosts.
 
 ## Folder structure
 
@@ -99,12 +102,10 @@ Some vars a required to run this role:
 
 ```YAML
 ---
-#prepare_host_users:
-#  - login: "testuser"
-#    group: "group1"
-
-#prepare_host_sudoers:
-#  - "testuser"
+prepare_host_users:
+  - login: "root"
+    group: "root"
+    sudoer: true
 
 prepare_host_packages_removed:
   - "vim*"
@@ -157,11 +158,9 @@ In order to surchage vars, you have multiples possibilities but for mains cases 
 # From inventory
 ---
 inv_prepare_host_users:
-  - login: "testuser"
-    group: "group1"
-
-inv_prepare_host_sudoers:
-  - "testuser"
+  - login: "root"
+    group: "root"
+    sudoer: true
 
 inv_prepare_host_packages_removed:
   - "vim*"
@@ -220,7 +219,6 @@ To run this role, you can copy the molecule/default/converge.yml playbook and ad
     - "labocbz.prepare_host"
   vars:
     prepare_host_users: "{{ inv_prepare_host_users }}"
-    prepare_host_sudoers: "{{ inv_prepare_host_sudoers }}"
     prepare_host_packages_removed: "{{ inv_prepare_host_packages_removed }}"
     prepare_host_packages_installed: "{{ inv_prepare_host_packages_installed }}"
   ansible.builtin.include_role:
@@ -246,6 +244,10 @@ Here you can put your change to keep a trace of your work and decisions.
 * Adding group and user creation
 * Adding more simple pipeline for testing
 * Remonving autoremove / purge / dist upgrade because RedHat ubi8 (YUM) is not compatible
+
+### 2023-06-25: Refactoring vars
+
+* Sudoers and users are in the same liste
 
 ## Authors
 
