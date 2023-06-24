@@ -10,14 +10,10 @@ stages:
 - gitlab-test
 - yaml-lint
 - jinja2-lint
-- ansible-roles-lint
-- molecule-roles-test
+- ansible-lint
+- molecule-test
 
 variables:
-  DOCKER_NEXUS_ADDRESS: "nexus-manager.net3107.storages.labo-cbz.net:8082"
-  DOCKER_IMAGE_DEBIAN_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/debian-11-ansible:v3.0"
-  DOCKER_IMAGE_DOCKER_ANSIBLE: "$DOCKER_NEXUS_ADDRESS/gitlabcicd/docker-ansible:v3.0"
-  DOCKER_IMAGE_DEBIAN_JINJA: "$DOCKER_NEXUS_ADDRESS/tuxmartin/jinja2-lint:2022-05-24"
   PIPELINE_SCENARIO_NAME: "gitlabci"
 
 ###############################################################################
@@ -53,16 +49,16 @@ variables:
   allow_failure: false
   retry: 2
 
-.ansible_lint_role: &ansible_lint_role
-  stage: ansible-roles-lint
+.ansible_lint: &ansible_lint
+  stage: ansible-lint
   image: $DOCKER_IMAGE_DEBIAN_ANSIBLE
   script:
     - ansible-lint --config=./.ansible-lint ./*
   allow_failure: false
   retry: 2
 
-.molecule_test_role: &molecule_test_role
-  stage: molecule-roles-test
+.molecule_test: &molecule_test
+  stage: molecule-test
   image:
     name: $DOCKER_IMAGE_DOCKER_ANSIBLE
   variables:
@@ -102,17 +98,17 @@ include:
 #### yaml-lint
 ############################################
 
-yaml_lint_roles:
+yaml_lint:
   <<: *yaml_lint
   variables:
     path: "./*/*.yml"
 
-yaml_lint_roles_molecule:
+yaml_lint_molecule:
   <<: *yaml_lint
   variables:
     path: "./molecule/*/*.yml"
 
-yaml_lint_roles_inventories:
+yaml_lint_inventories:
   <<: *yaml_lint
   variables:
     path: "./tests/inventory/hosts.yml ./tests/inventory/*/*.yml"
@@ -121,18 +117,15 @@ yaml_lint_roles_inventories:
 ##### jinja2-lint
 #############################################
 
-jinja2_lint_roles:
+jinja2_lint:
   <<: *jinja2_lint
 
 ############################################
 #### bootstrap_role
 ############################################
 
-ansible_lint_role_bootstrap_role:
+ansible_lint:
   <<: *ansible_lint_role
-  variables:
-    role: "bootstrap_role"
-    namespace: "labocbz"
 
-molecule_test_role_bootstrap_role:
-  <<: *molecule_test_role
+molecule_test:
+  <<: *molecule_test
