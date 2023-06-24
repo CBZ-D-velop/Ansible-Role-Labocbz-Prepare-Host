@@ -99,6 +99,10 @@ Some vars a required to run this role:
 
 ```YAML
 ---
+#prepare_host_users:
+#  - login: "testuser"
+#    group: "group1"
+
 #prepare_host_sudoers:
 #  - "testuser"
 
@@ -139,7 +143,7 @@ prepare_host_packages_installed:
   - "cron"
   - "virtualenv"
   - "nethogs"
-  - "iproute2
+  - "iproute2"
 
 ```
 
@@ -152,6 +156,10 @@ In order to surchage vars, you have multiples possibilities but for mains cases 
 ```YAML
 # From inventory
 ---
+inv_prepare_host_users:
+  - login: "testuser"
+    group: "group1"
+
 inv_prepare_host_sudoers:
   - "testuser"
 
@@ -208,13 +216,14 @@ To run this role, you can copy the molecule/default/converge.yml playbook and ad
 
 ```YAML
 - name: "Include labocbz.prepare_host"
-    tags:
+  tags:
     - "labocbz.prepare_host"
-    vars:
+  vars:
+    prepare_host_users: "{{ inv_prepare_host_users }}"
     prepare_host_sudoers: "{{ inv_prepare_host_sudoers }}"
     prepare_host_packages_removed: "{{ inv_prepare_host_packages_removed }}"
     prepare_host_packages_installed: "{{ inv_prepare_host_packages_installed }}"
-    ansible.builtin.include_role:
+  ansible.builtin.include_role:
     name: "labocbz.prepare_host"
 ```
 
@@ -229,6 +238,14 @@ Here you can put your change to keep a trace of your work and decisions.
 ### 2023-04-28: Update / Clean and autoremove packages
 
 * Added an update / clean / autoremove / purge task
+
+### 2023-06-11: Open Sources and Cache Update
+
+* Moove into a new repos for open sources
+* Adding codeowners
+* Adding group and user creation
+* Adding more simple pipeline for testing
+* Remonving autoremove / purge / dist upgrade because RedHat ubi8 (YUM) is not compatible
 
 ## Authors
 

@@ -34,7 +34,7 @@ variables:
 # Then we need to lint on role's files with a JINJA2 vision
 # Because if one of the templates files doesn't respect JINJA2 conventions,
 # we dont need to test rest of the pipeline
-.jinja2_lint: &jinja2_lint
+.jinja2_lint_role: &jinja2_lint_role
   stage: jinja2-lint
   image:
     name: $DOCKER_IMAGE_DEBIAN_JINJA
@@ -66,11 +66,7 @@ variables:
     ANSIBLE_FORCE_COLOR: '1'
   script:
     - docker login -u "$NEXUS_REPOS_USERNAME" -p "$NEXUS_REPOS_PASSWORD" http://$DOCKER_NEXUS_ADDRESS
-    - docker info
     - python3 -m compileall /usr/lib/python3 -qq
-    - python3 --version
-    - ansible --version
-    - molecule --version
     # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
     # This probably happens due to gitlab-runner mounting the git repo into the container
     - cp ./.ansible.cfg /root/.ansible.cfg

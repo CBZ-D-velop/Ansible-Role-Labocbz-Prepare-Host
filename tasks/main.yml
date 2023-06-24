@@ -4,9 +4,6 @@
     - name: "Update / clean and dist-upgrade the host"
       ansible.builtin.package:
         update_cache: yes
-        force_apt_get: yes
-        cache_valid_time: 3600
-        upgrade: dist
         autoclean: yes
         autoremove: yes
 
@@ -31,7 +28,6 @@
       register: output
       changed_when: output.changed != true
       ansible.builtin.package:
-        update_cache: yes
         name: "{{ prepare_host_packages_installed }}"
 
     - name: "Remove packages and config files"
@@ -40,15 +36,7 @@
       when: prepare_host_packages_removed is defined
       ansible.builtin.package:
         state: absent
-        purge: yes
         name: "{{ prepare_host_packages_removed }}"
-
-    - name: "Perform an autoremove after operations"
-      register: output
-      changed_when: output.changed != true
-      ansible.builtin.package:
-        autoremove: yes
-        purge: yes
 
 - name: "Create Groups"
   when: prepare_host_users is defined
