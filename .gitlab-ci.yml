@@ -121,7 +121,7 @@ jinja2_lint:
 ############################################
 
 ansible_lint:
-  <<: *ansible_lint_role
+  <<: *ansible_lint
 
 molecule_test:
   <<: *molecule_test
