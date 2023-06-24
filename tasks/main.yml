@@ -12,7 +12,7 @@
       ansible.builtin.stat:
         path: /var/run/reboot_required
 
-    - name: Reboot the host if required
+    - name: "Reboot the host if required"
       when: reboot_required_file.stat.exists
       ansible.builtin.reboot:
         msg: "(ANSIBLE): The host have to be rebooted."
@@ -25,21 +25,22 @@
 - name: "Install and remove packages"
   block:
     - name: "Install packages"
+      when: prepare_host_packages_installed | default(false)
       register: output
       changed_when: output.changed != true
       ansible.builtin.package:
         name: "{{ prepare_host_packages_installed }}"
 
     - name: "Remove packages and config files"
+      when: prepare_host_packages_removed | default(false)
       register: output
       changed_when: output.changed != true
-      when: prepare_host_packages_removed is defined
       ansible.builtin.package:
         state: absent
         name: "{{ prepare_host_packages_removed }}"
 
 - name: "Create Groups"
-  when: prepare_host_users is defined
+  when: prepare_host_users | default(false)
   loop: "{{ prepare_host_users }}"
   loop_control:
     loop_var: user
@@ -48,7 +49,7 @@
     state: present
 
 - name: "Create Users"
-  when: prepare_host_users is defined
+  when: prepare_host_users | default(false)
   loop: "{{ prepare_host_users }}"
   loop_control:
     loop_var: user
@@ -58,7 +59,7 @@
     state: present
 
 - name: "Import sudoers"
-  when: prepare_host_sudoers is defined
+  when: prepare_host_users | default(false)
   ansible.builtin.template:
     src: "templates/sudoers.j2"
     dest: "/etc/sudoers"
