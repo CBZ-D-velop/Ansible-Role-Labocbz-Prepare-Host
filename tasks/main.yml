@@ -3,7 +3,7 @@
   block:
     - name: "Update / clean and dist-upgrade the host"
       ansible.builtin.package:
-        update_cache: yes
+        update_cache: false
         autoclean: yes
         autoremove: yes
 
