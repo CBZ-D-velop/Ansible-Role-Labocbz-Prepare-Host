@@ -145,6 +145,7 @@ prepare_host_packages_installed:
   - "virtualenv"
   - "nethogs"
   - "iproute2"
+  - "iptables"
 
 ```
 
