@@ -66,3 +66,42 @@
     group: "root"
     owner: "root"
     mode: 0440
+
+- name: "handle system users"
+  when: prepare_host_system_users | default(false)
+  block:
+    - name: "Remove user"
+      loop: "{{ prepare_host_system_users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.user:
+        name: "{{ user.login }}"
+        state: absent
+        force: true
+
+    - name: "Remove /home/<user>"
+      loop: "{{ prepare_host_system_users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.file:
+        path: "/home/{{ user.login }}"
+        state: absent
+
+    - name: "Create Groups"
+      loop: "{{ prepare_host_system_users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.group:
+        name: "{{ user.group }}"
+        state: present
+
+    - name: "Add system user"
+      loop: "{{ prepare_host_system_users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.user:
+        name: "{{ user.login }}"
+        group: "{{ user.group }}"
+        state: present
+        system: true
+        create_home: false

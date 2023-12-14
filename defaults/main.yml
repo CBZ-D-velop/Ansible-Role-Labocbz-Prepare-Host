@@ -4,6 +4,10 @@ prepare_host_users:
     group: "root"
     sudoer: true
 
+prepare_host_system_users:
+  - login: "www-data"
+    group: "www-data"
+
 prepare_host_packages_removed:
   - "vim*"
   - "vi*"
