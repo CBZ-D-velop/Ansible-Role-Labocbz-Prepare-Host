@@ -4,6 +4,10 @@ inv_prepare_host_users:
     group: "group1"
     sudoer: true
 
+inv_prepare_host_system_users:
+  - login: "www-data"
+    group: "www-data"
+
 inv_prepare_host_packages_removed:
   - "vim*"
   - "vi*"

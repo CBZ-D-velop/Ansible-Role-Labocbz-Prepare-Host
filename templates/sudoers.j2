@@ -25,11 +25,11 @@ Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/
 # User privilege specification
 root    ALL=(ALL:ALL) ALL
 {% if prepare_host_sudoers | default(false) %}
-    {% for sudoer in prepare_host_users %}
-        {% if sudoer.sudoer | default(false) %}
+{% for sudoer in prepare_host_users %}
+{% if sudoer.sudoer | default(false) %}
 {{ sudoer }}    ALL=(ALL:ALL) ALL
-        {% endif %}
-    {% endfor %}
+{% endif %}
+{% endfor %}
 {% endif %}
 # Allow members of group sudo to execute any command
 %sudo   ALL=(ALL:ALL) ALL

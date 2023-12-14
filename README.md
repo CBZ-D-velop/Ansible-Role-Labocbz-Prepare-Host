@@ -111,6 +111,10 @@ prepare_host_packages_removed:
   - "vim*"
   - "vi*"
 
+prepare_host_system_users:
+  - login: "www-data"
+    group: "www-data"
+
 prepare_host_packages_installed:
   - "rsync"
   - "curl"
@@ -167,6 +171,10 @@ inv_prepare_host_packages_removed:
   - "vim*"
   - "vi*"
 
+inv_prepare_host_system_users:
+  - login: "www-data"
+    group: "www-data"
+
 inv_prepare_host_packages_installed:
   - "rsync"
   - "curl"
@@ -222,6 +230,7 @@ To run this role, you can copy the molecule/default/converge.yml playbook and ad
     prepare_host_users: "{{ inv_prepare_host_users }}"
     prepare_host_packages_removed: "{{ inv_prepare_host_packages_removed }}"
     prepare_host_packages_installed: "{{ inv_prepare_host_packages_installed }}"
+    prepare_host_system_users: "{{ inv_prepare_host_system_users }}"
   ansible.builtin.include_role:
     name: "labocbz.prepare_host"
 ```
@@ -256,6 +265,10 @@ Here you can put your change to keep a trace of your work and decisions.
 * Molecule now use remote Docker image by Lord Robin Crombez
 * Molecule now use custom Docker image in CI/CD by env vars
 * New CICD with needs and optimization
+
+### 2023-12-14: System users
+
+* Role can now create system users and address groups
 
 ## Authors
 
