@@ -1,12 +1,12 @@
 ---
-prepare_host_users:
-  - login: "root"
-    group: "root"
-    sudoer: true
+#prepare_host_users:
+#  - login: "root"
+#    group: "root"
+#    sudoer: true
 
-prepare_host_system_users:
-  - login: "www-data"
-    group: "www-data"
+#prepare_host_system_users:
+#  - login: "www-data"
+#    group: "www-data"
 
 prepare_host_packages_removed:
   - "vim*"
