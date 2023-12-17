@@ -270,6 +270,11 @@ Here you can put your change to keep a trace of your work and decisions.
 
 * Role can now create system users and address groups
 
+### 2023-12-17: Iptables
+
+* Role create now a cron job to save iptables rules
+* Role also create a cron job to restore iptables rules
+
 ## Authors
 
 * Lord Robin Crombez

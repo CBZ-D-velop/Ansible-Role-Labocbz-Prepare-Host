@@ -105,3 +105,35 @@
         state: present
         system: true
         create_home: false
+
+- name: "Handle iptables rules"
+  block:
+    - name: "Install package: iptables-persistent"
+      when: prepare_host_packages_installed | default(false)
+      register: output
+      changed_when: output.changed != true
+      ansible.builtin.package:
+        name: "iptables-persistent"
+
+- name: "Handler Docker No clean"
+  when: not (install_docker_handle_clean | default(false))
+  block:
+    - name: "Add a cron file under /etc/cron.d: save"
+      ansible.builtin.cron:
+        cron_file: "ansible_iptables_persistent"
+        name: "Iptables SAVE"
+        weekday: "*"
+        minute: "*/5"
+        hour: "*"
+        user: "root"
+        job: "iptables-save > /etc/iptables/rules.vX"
+        state: present
+
+    - name: "Add a cron file under /etc/cron.d: restore"
+      ansible.builtin.cron:
+        cron_file: "ansible_iptables_persistent"
+        name: "Iptables RESTORE"
+        special_time: "reboot"
+        user: "root"
+        job: "iptables-restore < /etc/iptables/rules.vX"
+        state: present
