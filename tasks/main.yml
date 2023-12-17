@@ -67,7 +67,7 @@
     owner: "root"
     mode: 0440
 
-- name: "handle system users"
+- name: "Handle system users"
   when: prepare_host_system_users | default(false)
   block:
     - name: "Remove user"
