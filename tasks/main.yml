@@ -55,8 +55,9 @@
     loop_var: user
   ansible.builtin.user:
     name: "{{ user.login }}"
-    group: "{{ user.group }}"
+    groups: "{{ user.group }}"
     state: present
+    append: true
 
 - name: "Import sudoers"
   when: prepare_host_users | default(false)
@@ -70,23 +71,6 @@
 - name: "Handle system users"
   when: prepare_host_system_users | default(false)
   block:
-    - name: "Remove user"
-      loop: "{{ prepare_host_system_users }}"
-      loop_control:
-        loop_var: user
-      ansible.builtin.user:
-        name: "{{ user.login }}"
-        state: absent
-        force: true
-
-    - name: "Remove /home/<user>"
-      loop: "{{ prepare_host_system_users }}"
-      loop_control:
-        loop_var: user
-      ansible.builtin.file:
-        path: "/home/{{ user.login }}"
-        state: absent
-
     - name: "Create Groups"
       loop: "{{ prepare_host_system_users }}"
       loop_control:
@@ -101,10 +85,12 @@
         loop_var: user
       ansible.builtin.user:
         name: "{{ user.login }}"
-        group: "{{ user.group }}"
+        groups: "{{ user.group }}"
         state: present
         system: true
         create_home: false
+        append: true
+        shell: "/sbin/nologin"
 
 - name: "Handle iptables rules"
   block:
@@ -126,7 +112,7 @@
         minute: "*/5"
         hour: "*"
         user: "root"
-        job: "iptables-save > /etc/iptables/rules.vX"
+        job: "iptables-save > /etc/iptables/rules.4X > /dev/null 2>&1"
         state: present
 
     - name: "Add a cron file under /etc/cron.d: restore"
@@ -135,5 +121,5 @@
         name: "Iptables RESTORE"
         special_time: "reboot"
         user: "root"
-        job: "iptables-restore < /etc/iptables/rules.vX"
+        job: "iptables-restore < /etc/iptables/rules.v4 > /dev/null 2>&1"
         state: present

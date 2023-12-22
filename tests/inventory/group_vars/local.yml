@@ -7,6 +7,8 @@ inv_prepare_host_users:
 inv_prepare_host_system_users:
   - login: "www-data"
     group: "www-data"
+  - login: "node_exporter"
+    group: "node_exporter"
 
 inv_prepare_host_packages_removed:
   - "vim*"
