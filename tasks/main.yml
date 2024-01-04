@@ -101,9 +101,6 @@
       ansible.builtin.package:
         name: "iptables-persistent"
 
-- name: "Handler Docker No clean"
-  when: not (install_docker_handle_clean | default(false))
-  block:
     - name: "Add a cron file under /etc/cron.d: save"
       ansible.builtin.cron:
         cron_file: "ansible_iptables_persistent"
@@ -112,7 +109,7 @@
         minute: "*/5"
         hour: "*"
         user: "root"
-        job: "iptables-save > /etc/iptables/rules.v4 > /dev/null 2>&1"
+        job: "/usr/sbin/iptables-save > /etc/iptables/rules.v4 > /dev/null 2>&1"
         state: present
 
     - name: "Add a cron file under /etc/cron.d: restore"
@@ -121,5 +118,5 @@
         name: "Iptables RESTORE"
         special_time: "reboot"
         user: "root"
-        job: "iptables-restore < /etc/iptables/rules.v4 > /dev/null 2>&1"
+        job: "/usr/sbin/iptables-restore < /etc/iptables/rules.v4 > /dev/null 2>&1"
         state: present
