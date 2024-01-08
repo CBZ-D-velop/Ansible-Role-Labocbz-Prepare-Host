@@ -109,7 +109,7 @@
         minute: "*/5"
         hour: "*"
         user: "root"
-        job: "/usr/sbin/iptables-save > /etc/iptables/rules.v4 > /dev/null 2>&1"
+        job: "$(/usr/sbin/iptables-save > /etc/iptables/rules.v4) > /dev/null 2>&1"
         state: present
 
     - name: "Add a cron file under /etc/cron.d: restore"
