@@ -34,7 +34,7 @@ prepare_host_packages_installed:
   - "procps"
   - "openssl"
   - "lsof"
-  - "initscripts"
+  #- "initscripts"
   - "zip"
   - "tree"
   - "python3-apt"
