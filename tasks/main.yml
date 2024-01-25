@@ -118,5 +118,5 @@
         name: "Iptables RESTORE"
         special_time: "reboot"
         user: "root"
-        job: "/usr/sbin/iptables-restore < /etc/iptables/rules.v4 > /dev/null 2>&1"
+        job: "$(/usr/sbin/iptables-restore < /etc/iptables/rules.v4) > /dev/null 2>&1"
         state: present
