@@ -11,22 +11,23 @@ platforms:
   - name: "molecule-cicd-debian-12-instance-1-prepare-host"
     image: "${NEXUS_REPOS_DOCKER_REGISTRY}/${DOCKER_IMAGE_DEBIAN_12_ANSIBLE}"
     command: "/sbin/init"
+    hostname: "molecule-instance-1-prepare-host"
     #published_ports:
     #  - "0.0.0.0:8181:8181/tcp"
-    dockerfile: "Dockerfile"
     privileged: true
     pre_build_image: true
     override_command: true
-    tmpfs:
-      - "/run"
-      - "/tmp"
+    #tmpfs:
+    #  - "/run"
+    #  - "/tmp"
     volumes:
-      - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
-      - "/var/lib/containerd:/var/lib/containerd"
-    cgroupns_mode: "host"
-    cgroup_manager: "cgroupfs"
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    #cgroupns_mode: "host"
+    #cgroup_manager: "cgroupfs"
     #storage_opt: "overlay.mount_program=/usr/bin/fuse-overlayfs"
-    #storage_driver: "overlay"
+    storage_driver: "overlay2"
+    networks:
+      - name: "molecule-cicd-debian-12-prepare-host"
 
 provisioner:
   name: "ansible"
