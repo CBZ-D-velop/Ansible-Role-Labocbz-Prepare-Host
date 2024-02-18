@@ -8,7 +8,7 @@ driver:
   name: "docker"
 
 platforms:
-  - name: "molecule-cicd-debian-12-instance-1-prepare-host"
+  - name: "molecule-cicd-instance-1-prepare-host"
     image: "${NEXUS_REPOS_DOCKER_REGISTRY}/${DOCKER_IMAGE_DEBIAN_12_ANSIBLE}"
     command: "/sbin/init"
     hostname: "molecule-cicd-instance-1-prepare-host"
