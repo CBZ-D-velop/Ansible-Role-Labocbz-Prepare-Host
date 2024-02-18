@@ -49,8 +49,6 @@ provisioner:
     MOLECULE_DEBUG: 1
     # change ansible own verbosity
     ANSIBLE_VERBOSITY: 1
-    PY_COLORS: '1'
-    ANSIBLE_FORCE_COLOR: '1'
 
 verifier:
   name: "ansible"
@@ -64,6 +62,6 @@ scenario:
     - "create"
     - "prepare"
     - "converge"
-    #- "idempotence"
+    - "idempotence"
     - "verify"
     - "destroy"
