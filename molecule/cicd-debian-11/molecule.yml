@@ -9,7 +9,7 @@ driver:
 
 platforms:
   - name: "molecule-local-instance-1-prepare-host"
-    image: "${NEXUS_ADDRESS}/${DOCKER_IMAGE_DEBIAN_11_ANSIBLE}"
+    image: "${NEXUS_DOCKER_GROUP_REGISTRY}/${DOCKER_IMAGE_DEBIAN_11_ANSIBLE}"
     command: "/sbin/init"
     #published_ports:
     #  - "0.0.0.0:8181:8181/tcp"
