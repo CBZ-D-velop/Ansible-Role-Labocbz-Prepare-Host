@@ -43,8 +43,11 @@ galaxy_info:
   platforms:
     - name: "Debian"
       versions:
-        - "buster"
         - "bullseye"
+        - "bookworm"
+    - name: "Ubuntu"
+      versions:
+        - "Jammy Jellyfish"
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is a keyword that describes

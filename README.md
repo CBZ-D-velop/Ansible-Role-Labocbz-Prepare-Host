@@ -102,20 +102,20 @@ Some vars a required to run this role:
 
 ```YAML
 ---
-prepare_host_users:
+prepare_host__users:
   - login: "root"
     group: "root"
     sudoer: true
 
-prepare_host_packages_removed:
+prepare_host__packages_removed:
   - "vim*"
   - "vi*"
 
-prepare_host_system_users:
+prepare_host__system_users:
   - login: "www-data"
     group: "www-data"
 
-prepare_host_packages_installed:
+prepare_host__packages_installed:
   - "rsync"
   - "curl"
   - "python3"
@@ -162,20 +162,20 @@ In order to surchage vars, you have multiples possibilities but for mains cases 
 ```YAML
 # From inventory
 ---
-inv_prepare_host_users:
+inv_prepare_host__users:
   - login: "root"
     group: "root"
     sudoer: true
 
-inv_prepare_host_packages_removed:
+inv_prepare_host__packages_removed:
   - "vim*"
   - "vi*"
 
-inv_prepare_host_system_users:
+inv_prepare_host__system_users:
   - login: "www-data"
     group: "www-data"
 
-inv_prepare_host_packages_installed:
+inv_prepare_host__packages_installed:
   - "rsync"
   - "curl"
   - "python3"
@@ -227,10 +227,10 @@ To run this role, you can copy the molecule/default/converge.yml playbook and ad
   tags:
     - "labocbz.prepare_host"
   vars:
-    prepare_host_users: "{{ inv_prepare_host_users }}"
-    prepare_host_packages_removed: "{{ inv_prepare_host_packages_removed }}"
-    prepare_host_packages_installed: "{{ inv_prepare_host_packages_installed }}"
-    prepare_host_system_users: "{{ inv_prepare_host_system_users }}"
+    prepare_host__users: "{{ inv_prepare_host__users }}"
+    prepare_host__packages_removed: "{{ inv_prepare_host__packages_removed }}"
+    prepare_host__packages_installed: "{{ inv_prepare_host__packages_installed }}"
+    prepare_host__system_users: "{{ inv_prepare_host__system_users }}"
   ansible.builtin.include_role:
     name: "labocbz.prepare_host"
 ```

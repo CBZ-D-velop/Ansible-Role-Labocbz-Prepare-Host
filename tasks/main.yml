@@ -25,23 +25,23 @@
 - name: "Install and remove packages"
   block:
     - name: "Install packages"
-      when: prepare_host_packages_installed | default(false)
+      when: prepare_host__packages_installed | default(false)
       register: output
       changed_when: output.changed != true
       ansible.builtin.package:
-        name: "{{ prepare_host_packages_installed }}"
+        name: "{{ prepare_host__packages_installed }}"
 
     - name: "Remove packages and config files"
-      when: prepare_host_packages_removed | default(false)
+      when: prepare_host__packages_removed | default(false)
       register: output
       changed_when: output.changed != true
       ansible.builtin.package:
         state: absent
-        name: "{{ prepare_host_packages_removed }}"
+        name: "{{ prepare_host__packages_removed }}"
 
 - name: "Create Groups"
-  when: prepare_host_users | default(false)
-  loop: "{{ prepare_host_users }}"
+  when: prepare_host__users | default(false)
+  loop: "{{ prepare_host__users }}"
   loop_control:
     loop_var: user
   ansible.builtin.group:
@@ -49,8 +49,8 @@
     state: present
 
 - name: "Create Users"
-  when: prepare_host_users | default(false)
-  loop: "{{ prepare_host_users }}"
+  when: prepare_host__users | default(false)
+  loop: "{{ prepare_host__users }}"
   loop_control:
     loop_var: user
   ansible.builtin.user:
@@ -60,7 +60,7 @@
     append: true
 
 - name: "Import sudoers"
-  when: prepare_host_users | default(false)
+  when: prepare_host__users | default(false)
   ansible.builtin.template:
     src: "templates/sudoers.j2"
     dest: "/etc/sudoers"
@@ -69,10 +69,10 @@
     mode: 0440
 
 - name: "Handle system users"
-  when: prepare_host_system_users | default(false)
+  when: prepare_host__system_users | default(false)
   block:
     - name: "Create Groups"
-      loop: "{{ prepare_host_system_users }}"
+      loop: "{{ prepare_host__system_users }}"
       loop_control:
         loop_var: user
       ansible.builtin.group:
@@ -80,7 +80,7 @@
         state: present
 
     - name: "Add system user"
-      loop: "{{ prepare_host_system_users }}"
+      loop: "{{ prepare_host__system_users }}"
       loop_control:
         loop_var: user
       ansible.builtin.user:
@@ -95,7 +95,7 @@
 - name: "Handle iptables rules"
   block:
     - name: "Install package: iptables-persistent"
-      when: prepare_host_packages_installed | default(false)
+      when: prepare_host__packages_installed | default(false)
       register: output
       changed_when: output.changed != true
       ansible.builtin.package:

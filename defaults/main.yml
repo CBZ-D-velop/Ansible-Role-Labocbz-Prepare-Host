@@ -1,18 +1,18 @@
 ---
-#prepare_host_users:
+#prepare_host__users:
 #  - login: "root"
 #    group: "root"
 #    sudoer: true
 
-#prepare_host_system_users:
+#prepare_host__system_users:
 #  - login: "www-data"
 #    group: "www-data"
 
-prepare_host_packages_removed:
+prepare_host__packages_removed:
   - "vim*"
   - "vi*"
 
-prepare_host_packages_installed:
+prepare_host__packages_installed:
   - "rsync"
   - "curl"
   - "python3"

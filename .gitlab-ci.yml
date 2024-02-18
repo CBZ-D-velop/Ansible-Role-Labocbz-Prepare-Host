@@ -100,3 +100,17 @@ molecule_test_debian_11:
     SCENARIO: "cicd-debian-11"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+
+molecule_test_debian_12:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-debian-12"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+molecule_test_ubuntu_22:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-ubuntu-22"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"

@@ -1,20 +1,20 @@
 ---
-inv_prepare_host_users:
+inv_prepare_host__users:
   - login: "testuser"
     group: "group1"
     sudoer: true
 
-inv_prepare_host_system_users:
+inv_prepare_host__system_users:
   - login: "www-data"
     group: "www-data"
   - login: "node_exporter"
     group: "node_exporter"
 
-inv_prepare_host_packages_removed:
+inv_prepare_host__packages_removed:
   - "vim*"
   - "vi*"
 
-inv_prepare_host_packages_installed:
+inv_prepare_host__packages_installed:
   - "rsync"
   - "curl"
   - "python3"
