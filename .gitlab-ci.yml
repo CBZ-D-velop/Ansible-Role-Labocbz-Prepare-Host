@@ -9,7 +9,9 @@
 stages:
 - gitlab-test
 - lint
-- test
+- test-debian-11
+- test-debian-12
+- test-ubuntu-22
 
 ###############################################################################
 #################### actions
@@ -74,7 +76,6 @@ ansible_lint:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 .molecule_test: &molecule_test
-  stage: test
   image: $NEXUS_DOCKER_GROUP_REGISTRY/$DOCKER_IMAGE_DOCKER_MOLECULE
   variables:
     PY_COLORS: '1'
@@ -96,6 +97,7 @@ ansible_lint:
 
 molecule_test_debian_11:
   <<: *molecule_test
+  stage: test-debian-11
   variables:
     SCENARIO: "cicd-debian-11"
   rules:
@@ -103,6 +105,7 @@ molecule_test_debian_11:
 
 molecule_test_debian_12:
   <<: *molecule_test
+  stage: test-debian-12
   variables:
     SCENARIO: "cicd-debian-12"
   rules:
@@ -110,6 +113,7 @@ molecule_test_debian_12:
 
 molecule_test_ubuntu_22:
   <<: *molecule_test
+  stage: test-ubuntu-22
   variables:
     SCENARIO: "cicd-ubuntu-22"
   rules:
