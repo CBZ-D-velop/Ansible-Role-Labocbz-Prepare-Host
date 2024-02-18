@@ -8,8 +8,8 @@ driver:
   name: "docker"
 
 platforms:
-  - name: "molecule-local-instance-1-prepare-host"
-    image: "${NEXUS_DOCKER_GROUP_REGISTRY}/${DOCKER_IMAGE_UBUNTU_22_ANSIBLE}"
+  - name: "molecule-cicd-ubuntu-22-instance-1-prepare-host"
+    image: "${NEXUS_REPOS_DOCKER_REGISTRY}/${DOCKER_IMAGE_UBUNTU_22_ANSIBLE}"
     command: "/sbin/init"
     #published_ports:
     #  - "0.0.0.0:8181:8181/tcp"
@@ -40,7 +40,7 @@ provisioner:
   log: ${MOLECULE_ANSIBLE_LOG:-true}
   env:
     ANSIBLE_CONFIG: "../../.ansible.cfg"
-    ANSIBLE_FORCE_COLOR: "True"
+    ANSIBLE_FORCE_COLOR: "true"
     # disable nologs
     MOLECULE_NOLOG: 0
     # disable destroy
@@ -49,6 +49,8 @@ provisioner:
     MOLECULE_DEBUG: 1
     # change ansible own verbosity
     ANSIBLE_VERBOSITY: 1
+    PY_COLORS: '1'
+    ANSIBLE_FORCE_COLOR: '1'
 
 verifier:
   name: "ansible"
