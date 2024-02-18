@@ -11,7 +11,7 @@ platforms:
   - name: "molecule-cicd-debian-11-instance-1-prepare-host"
     image: "${NEXUS_REPOS_DOCKER_REGISTRY}/${DOCKER_IMAGE_DEBIAN_11_ANSIBLE}"
     command: "/sbin/init"
-    hostname: "molecule-instance-1-prepare-host"
+    hostname: "molecule-cicd-instance-1-prepare-host"
     #published_ports:
     #  - "0.0.0.0:8181:8181/tcp"
     privileged: true
