@@ -275,6 +275,12 @@ Here you can put your change to keep a trace of your work and decisions.
 * Role create now a cron job to save iptables rules
 * Role also create a cron job to restore iptables rules
 
+### 2023-02-18: New CICI and fixes
+
+* Added support for Ubuntu 22
+* Added support for Debian 11/22
+* Edited vars for linting (role name and __)
+
 ## Authors
 
 * Lord Robin Crombez
