@@ -106,7 +106,7 @@ molecule_test_debian_12:
     SCENARIO: "cicd-debian-12"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
-  need:
+  needs:
     - "molecule_test_debian_11"
 
 molecule_test_ubuntu_22:
@@ -115,5 +115,5 @@ molecule_test_ubuntu_22:
     SCENARIO: "cicd-ubuntu-22"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
-  need:
+  needs:
     - "molecule_test_debian_12"
