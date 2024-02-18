@@ -38,12 +38,11 @@ yaml_lint:
     # This probably happens due to gitlab-runner mounting the git repo into the container
     - "chmod o-w ."
   script:
-    - yamllint -c --list-files
+    - yamllint --list-files ./
     - yamllint -c ./.yamllint ./
   allow_failure: false
   retry: 2
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
 jinja_lint:
@@ -58,7 +57,6 @@ jinja_lint:
   allow_failure: false
   retry: 2
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
 ansible_lint:
@@ -73,7 +71,6 @@ ansible_lint:
   allow_failure: false
   retry: 2
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
 .molecule_test: &molecule_test
@@ -95,11 +92,11 @@ ansible_lint:
   allow_failure: false
   retry: 2
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 molecule_test_debian_11:
   <<: *molecule_test
   variables:
     SCENARIO: "cicd-debian-11"
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
