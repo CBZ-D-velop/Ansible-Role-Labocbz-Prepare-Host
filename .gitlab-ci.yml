@@ -115,7 +115,7 @@ ansible_lint:
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
-    - "git remote remove rc_origin \"CI_REPOSITORY_URL\" || true"
+    - "git remote remove rc_origin || true"
     - "git remote add rc_origin git@gitlab.com:cbz-d-velop/public-ansible/ansible-role-labocbz-prepare-host.git"
     - "git checkout \"develop\""
     - "git stash"
