@@ -102,13 +102,20 @@ ansible_lint:
     - MAJOR_VERSION=$((MAJOR_VERSION + 1))
     - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
     - RC_BRANCH_NAME="RC-$MAJOR_VERSION.0-$TIMESTAMP"
-    - HTTPS_REPOSITORY_URL=${CI_REPOSITORY_URL/http:/https:}
-    - echo $CI_REPOSITORY_URL
-    - echo $HTTPS_REPOSITORY_URL
+    #
+    - mkdir -p ~/.ssh
+    # Paste the PRIVATE key into a gitlab variable. Pay attention to the linebreak at the end when pasting
+    - echo "$GITLAB_CI_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - echo "$GITLAB_CI_SSH_PUBLIC_KEY" | tr -d '\r' > ~/.ssh/id_rsa.pub
+    - chmod 600 ~/.ssh/id_rsa*
+    - eval "$(ssh-agent -s)"
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
-    - "git remote add rc_origin \"HTTPS_REPOSITORY_URL\" || true"
+    - "git remote remove rc_origin \"CI_REPOSITORY_URL\" || true"
+    - "git remote add rc_origin git@gitlab.com:cbz-d-velop/public-ansible/ansible-role-labocbz-prepare-host.git"
     - "git checkout \"develop\""
     - "git stash"
     - "git pull origin \"develop\""
