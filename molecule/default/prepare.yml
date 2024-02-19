@@ -5,14 +5,14 @@
   gather_facts: true
   tasks:
 
-    - name: "Include cryptographic content var file"
-      ansible.builtin.include_vars: "../../tests/certs/main.yml"
+    #- name: "Include cryptographic content var file"
+    #  ansible.builtin.include_vars: "../../tests/certs/main.yml"
 
-    - name: "Include labocbz.prepare_host"
-      tags:
-        - "labocbz.prepare_host"
-      ansible.builtin.include_role:
-        name: "labocbz.prepare_host"
+    #- name: "Include labocbz.prepare_host"
+    #  tags:
+    #    - "labocbz.prepare_host"
+    #  ansible.builtin.include_role:
+    #    name: "labocbz.prepare_host"
 
     - name: "Gather facts from all hosts"
       delegate_to: "{{ item }}"
