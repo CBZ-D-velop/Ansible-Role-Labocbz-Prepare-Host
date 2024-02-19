@@ -9,14 +9,12 @@ driver:
 
 platforms:
   - name: "molecule-cicd-instance-1-prepare-host"
-    image: "robincbz/debian-11-ansible:latest"
-    command: "/sbin/init"
+    image: "robincbz/debian-12-ansible:latest"
     hostname: "molecule-cicd-instance-1-prepare-host"
     #published_ports:
     #  - "0.0.0.0:8181:8181/tcp"
     privileged: true
     pre_build_image: true
-    override_command: true
     #tmpfs:
     #  - "/run"
     #  - "/tmp"
