@@ -81,6 +81,8 @@ ansible_lint:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
   stage: test
   before_script:
+    - "export DOCKER_CLIENT_TIMEOUT=180"
+    - "export COMPOSE_HTTP_TIMEOUT=180"
     - "docker login -u \"$NEXUS_REPOS_USERNAME\" -p \"$NEXUS_REPOS_PASSWORD\" \"http://$NEXUS_REPOS_DOCKER_REGISTRY\""
     - "python3 -m compileall /usr/lib/python3 -qq"
     - "cp ./.ansible.cfg /root/.ansible.cfg"
