@@ -107,9 +107,9 @@ ansible_lint:
     # Paste the PRIVATE key into a gitlab variable. Pay attention to the linebreak at the end when pasting
     - echo "$GITLAB_CI_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - echo "$GITLAB_CI_SSH_PUBLIC_KEY" | tr -d '\r' > ~/.ssh/id_rsa.pub
-    - chmod 600 ~/.ssh/id_rsa*
+    - chmod 400 ~/.ssh/id_rsa*
     - eval "$(ssh-agent -s)"
-    - ssh-add ~/.ssh/id_rsa
+    - ssh-add "$SSH_PRIVATE_KEY" | tr -d '\r"
     - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
