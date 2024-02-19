@@ -47,7 +47,7 @@ yaml_lint:
     - yamllint -c ./.yamllint ./
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
 
 jinja_lint:
   stage: lint
@@ -60,7 +60,7 @@ jinja_lint:
     - "[ -n \"$(find ./templates -name '*.j2')\" ] && j2lint ./templates/*.j2 --ignore S3 S7"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
 
 ansible_lint:
   stage: lint
@@ -73,7 +73,7 @@ ansible_lint:
     - ansible-lint --config=./.ansible-lint --exclude molecule --exclude tests ./*
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
 
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
@@ -90,7 +90,7 @@ ansible_lint:
     - "molecule test --scenario-name $SCENARIO"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_ANSIBLE
@@ -109,7 +109,6 @@ ansible_lint:
     - "git checkout \"$CI_DEFAULT_BRANCH\""
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
-    - "git commit -m \"push RELEASE CANDIDATE from CICD pipeline\""
     - "git push rc_origin \"$RC_BRANCH_NAME\""
   allow_failure: false
 
@@ -122,14 +121,14 @@ molecule_test_debian_11:
   variables:
     SCENARIO: "cicd-debian-11"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
 
 molecule_test_debian_12:
   <<: *molecule_test
   variables:
     SCENARIO: "cicd-debian-12"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
   needs:
     - "molecule_test_debian_11"
 
@@ -138,7 +137,7 @@ molecule_test_ubuntu_22:
   variables:
     SCENARIO: "cicd-ubuntu-22"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
   needs:
     - "molecule_test_debian_12"
 
@@ -147,4 +146,4 @@ publish_release_candidate:
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$CI_DEFAULT_BRANCH"
