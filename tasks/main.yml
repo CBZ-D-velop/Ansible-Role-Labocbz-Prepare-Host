@@ -1,4 +1,29 @@
 ---
+- name: "Update the host"
+  block:
+    - name: "Update / clean and dist-upgrade the host"
+      changed_when: false == true
+      failed_when: false
+      ansible.builtin.package:
+        update_cache: true
+        autoclean: yes
+        autoremove: yes
+
+    - name: "Check if reboot is required or not"
+      register: reboot_required_file
+      ansible.builtin.stat:
+        path: /var/run/reboot_required
+
+    - name: "Reboot the host if required"
+      when: reboot_required_file.stat.exists
+      ansible.builtin.reboot:
+        msg: "(ANSIBLE): The host have to be rebooted."
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
 - name: "Install and remove packages"
   block:
     - name: "Install packages"

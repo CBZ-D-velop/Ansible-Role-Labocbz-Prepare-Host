@@ -10,6 +10,7 @@ stages:
 - gitlab-test
 - lint
 - test
+- publish
 
 ###############################################################################
 #################### actions
@@ -77,9 +78,6 @@ ansible_lint:
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
   stage: test
-  variables:
-    PY_COLORS: '1'
-    ANSIBLE_FORCE_COLOR: '1'
   before_script:
     - "docker login -u \"$NEXUS_REPOS_USERNAME\" -p \"$NEXUS_REPOS_PASSWORD\" \"http://$NEXUS_REPOS_DOCKER_REGISTRY\""
     - "python3 -m compileall /usr/lib/python3 -qq"
@@ -93,6 +91,31 @@ ansible_lint:
   allow_failure: false
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+
+.publish_release: &publish_release
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
+  stage: publish
+  before_script:
+    - TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)
+    - LATEST_TAG=$(echo "$TAGS" | tail -n 1)
+    - MAJOR_VERSION=$(echo "$LATEST_TAG" | grep -oE '^[0-9]+')
+    - MAJOR_VERSION=$((MAJOR_VERSION + 1))
+    - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
+    - RC_BRANCH_NAME="RC-$MAJOR_VERSION.0-$TIMESTAMP"
+  script:
+    - "git config user.email \"$GITLAB_USER_EMAIL\""
+    - "git config user.name \"$GITLAB_USER_EMAIL\""
+    - "git remote add origin $CI_REPOSITORY_URL"
+    - "git checkout $CI_DEFAULT_BRANCH"
+    - "git checkout -b "$RC_BRANCH_NAME"
+    - "git add ."
+    - "git commit -m \"push RELEASE CANDIDATE from CICD pipeline\""
+    - "git push origin $RC_BRANCH_NAME"
+  allow_failure: false
+
+###############################################################################
+#################### CICD
+###############################################################################
 
 molecule_test_debian_11:
   <<: *molecule_test
@@ -118,3 +141,10 @@ molecule_test_ubuntu_22:
     - if: $CI_COMMIT_BRANCH == "develop"
   needs:
     - "molecule_test_debian_12"
+
+publish_release_candidate:
+  <<: *publish_release
+  variables:
+    CI_JOB_TOKEN: $CICD_TOKEN
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
