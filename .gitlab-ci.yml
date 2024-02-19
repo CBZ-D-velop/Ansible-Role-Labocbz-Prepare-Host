@@ -111,7 +111,7 @@ ansible_lint:
     - cat ~/.ssh/id_rsa
     - cat ~/.ssh/id_rsa.pub
     - eval "$(ssh-agent -s)"
-    - ssh-add "$SSH_PRIVATE_KEY" | tr -d '\r"
+    - ssh-add "$(cat $GITLAB_CI_SSH_PRIVATE_KEY)" | tr -d '\r"
     - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
