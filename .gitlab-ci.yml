@@ -49,7 +49,7 @@ yaml_lint:
     - yamllint -c ./.yamllint ./
   allow_failure: false
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
 jinja_lint:
   stage: lint
@@ -62,7 +62,7 @@ jinja_lint:
     - "[ -n \"$(find ./templates -name '*.j2')\" ] && j2lint ./templates/*.j2 --ignore S3 S7"
   allow_failure: false
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
 ansible_lint:
   stage: lint
@@ -75,7 +75,7 @@ ansible_lint:
     - ansible-lint --config=./.ansible-lint --exclude molecule --exclude tests ./*
   allow_failure: false
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
@@ -94,7 +94,7 @@ ansible_lint:
     - "molecule test --scenario-name $SCENARIO"
   allow_failure: false
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
@@ -137,7 +137,7 @@ molecule_test_debian_12:
   variables:
     SCENARIO: "cicd-debian-12"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
   needs:
     - "yaml_lint"
     - "jinja_lint"
@@ -149,7 +149,7 @@ molecule_test_debian_11:
     SCENARIO: "cicd-debian-11"
   allow_failure: true
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
   needs:
     - "molecule_test_debian_12"
 
@@ -159,7 +159,7 @@ molecule_test_ubuntu_22:
     SCENARIO: "cicd-ubuntu-22"
   allow_failure: true
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
   needs:
     - "molecule_test_debian_11"
 
@@ -170,4 +170,4 @@ publish_release_candidate:
   needs:
     - "molecule_test_debian_12"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE !~= /^Merge(.?)*/'
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
