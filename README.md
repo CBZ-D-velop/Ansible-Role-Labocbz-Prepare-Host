@@ -102,54 +102,59 @@ Some vars a required to run this role:
 
 ```YAML
 ---
-prepare_host__users:
-  - login: "root"
-    group: "root"
-    sudoer: true
+#prepare_host__users:
+#  - login: "root"
+#    group: "root"
+#    uid: 1
+#    gid: 1
+#    sudoer: true
+#    password: "secret"
 
-prepare_host__packages_removed:
-  - "vim*"
-  - "vi*"
+#prepare_host__system_users:
+#  - login: "www-data"
+#    group: "www-data"
+#    uid: 33
+#    gid: 33
 
-prepare_host__system_users:
-  - login: "www-data"
-    group: "www-data"
+#prepare_host__packages_removed:
+#  - "vim*"
+#  - "vi*"
 
-prepare_host__packages_installed:
-  - "rsync"
-  - "curl"
-  - "python3"
-  - "python3-jmespath"
-  - "python3-pip"
-  - "python3-lxml"
-  - "libssl-dev"
-  - "libffi-dev"
-  - "git"
-  - "wget"
-  - "lsb-release"
-  - "gnupg2"
-  - "software-properties-common"
-  - "apt-transport-https"
-  - "ca-certificates"
-  - "sudo"
-  - "nano"
-  - "net-tools"
-  - "procps"
-  - "openssl"
-  - "lsof"
-  - "initscripts"
-  - "zip"
-  - "tree"
-  - "python3-apt"
-  - "python3-pip"
-  - "python3-setuptools"
-  - "iftop"
-  - "htop"
-  - "cron"
-  - "virtualenv"
-  - "nethogs"
-  - "iproute2"
-  - "iptables"
+#prepare_host__packages_installed:
+#  - "rsync"
+#  - "curl"
+#  - "python3"
+#  - "python3-jmespath"
+#  - "python3-pip"
+#  - "python3-lxml"
+#  - "libssl-dev"
+#  - "libffi-dev"
+#  - "git"
+#  - "wget"
+#  - "lsb-release"
+#  - "gnupg2"
+#  - "software-properties-common"
+#  - "apt-transport-https"
+#  - "ca-certificates"
+#  - "sudo"
+#  - "nano"
+#  - "net-tools"
+#  - "procps"
+#  - "openssl"
+#  - "lsof"
+#  #- "initscripts"
+#  - "zip"
+#  - "tree"
+#  - "python3-apt"
+#  - "python3-pip"
+#  - "python3-setuptools"
+#  - "iftop"
+#  - "htop"
+#  - "cron"
+#  - "virtualenv"
+#  - "nethogs"
+#  - "iproute2"
+#  - "iptables"
 
 ```
 
@@ -163,17 +168,22 @@ In order to surchage vars, you have multiples possibilities but for mains cases 
 # From inventory
 ---
 inv_prepare_host__users:
-  - login: "root"
-    group: "root"
+  - login: "root2"
+    group: "root2"
+    uid: 1000
+    gid: 1000
     sudoer: true
+    password: "secret"
+
+inv_prepare_host__system_users:
+  - login: "www-data2"
+    group: "www-data2"
+    uid: 3333
+    gid: 3333
 
 inv_prepare_host__packages_removed:
   - "vim*"
   - "vi*"
-
-inv_prepare_host__system_users:
-  - login: "www-data"
-    group: "www-data"
 
 inv_prepare_host__packages_installed:
   - "rsync"
@@ -197,7 +207,6 @@ inv_prepare_host__packages_installed:
   - "procps"
   - "openssl"
   - "lsof"
-  - "initscripts"
   - "zip"
   - "tree"
   - "python3-apt"
@@ -209,6 +218,7 @@ inv_prepare_host__packages_installed:
   - "virtualenv"
   - "nethogs"
   - "iproute2"
+  - "iptables"
 
 ```
 
@@ -280,6 +290,10 @@ Here you can put your change to keep a trace of your work and decisions.
 * Added support for Ubuntu 22
 * Added support for Debian 11/22
 * Edited vars for linting (role name and __)
+* Added generic support for Docker dind (can add used for obscures reasons ... user in use)
+* Fix idempotency
+* Added informations for UID and GID for user/groups
+* Added support for user password creation (on_create)
 
 ## Authors
 

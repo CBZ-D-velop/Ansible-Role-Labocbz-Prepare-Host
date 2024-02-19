@@ -19,7 +19,8 @@ variables:
   ANSIBLE_FORCE_COLOR: 'true'
   PY_COLORS: '1'
   #
-  DOCKER_IMAGE_DOCKER_MOLECULE: robincbz/docker-molecule:latest
+  DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
+  DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
   DOCKER_IMAGE_ANSIBLE_LINT: robincbz/alpine-ansiblelint:latest
   DOCKER_IMAGE_JINJA_LINT: robincbz/alpine-jinjalint:latest
   DOCKER_IMAGE_YAML_LINT: robincbz/alpine-yamllint:latest
@@ -74,7 +75,7 @@ ansible_lint:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 .molecule_test: &molecule_test
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_MOLECULE
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
   stage: test
   variables:
     PY_COLORS: '1'

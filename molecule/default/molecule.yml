@@ -9,7 +9,7 @@ driver:
 
 platforms:
   - name: "molecule-cicd-instance-1-prepare-host"
-    image: "robincbz/debian-12-ansible:latest"
+    image: "robincbz/debian-11-ansible:latest"
     command: "/sbin/init"
     hostname: "molecule-cicd-instance-1-prepare-host"
     #published_ports:
