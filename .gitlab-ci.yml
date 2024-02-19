@@ -93,7 +93,7 @@ ansible_lint:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 .publish_release: &publish_release
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_ANSIBLE
   stage: publish
   before_script:
     - TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)
@@ -105,12 +105,12 @@ ansible_lint:
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
-    - "git remote add origin \"$CI_REPOSITORY_URL\""
+    - "git remote add rc_origin \"$CI_REPOSITORY_URL\""
     - "git checkout \"$CI_DEFAULT_BRANCH\""
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git commit -m \"push RELEASE CANDIDATE from CICD pipeline\""
-    - "git push origin \"$RC_BRANCH_NAME\""
+    - "git push rc_origin \"$RC_BRANCH_NAME\""
   allow_failure: false
 
 ###############################################################################
