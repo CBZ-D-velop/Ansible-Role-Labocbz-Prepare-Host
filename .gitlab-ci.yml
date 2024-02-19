@@ -7,10 +7,10 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
 stages:
+- publish
 - gitlab-test
 - lint
 - test
-- publish
 
 ###############################################################################
 #################### actions
