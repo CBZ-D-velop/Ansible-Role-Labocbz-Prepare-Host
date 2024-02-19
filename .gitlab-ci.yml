@@ -108,7 +108,7 @@ ansible_lint:
     - echo "$GITLAB_CI_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - echo "$GITLAB_CI_SSH_PUBLIC_KEY" | tr -d '\r' > ~/.ssh/id_rsa.pub
     - chmod 400 ~/.ssh/id_rsa*
-    - eval "$(ssh-agent -s)"
+    - eval "$(ssh-agent -s)" || true
     - ssh-add "$SSH_PRIVATE_KEY" | tr -d '\r"
     - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
   script:
