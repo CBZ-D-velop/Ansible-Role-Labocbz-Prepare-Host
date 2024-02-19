@@ -50,6 +50,7 @@ yaml_lint:
   allow_failure: false
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 jinja_lint:
   stage: lint
@@ -63,6 +64,7 @@ jinja_lint:
   allow_failure: false
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 ansible_lint:
   stage: lint
@@ -76,6 +78,7 @@ ansible_lint:
   allow_failure: false
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
@@ -95,6 +98,7 @@ ansible_lint:
   allow_failure: false
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
@@ -138,6 +142,7 @@ molecule_test_debian_12:
     SCENARIO: "cicd-debian-12"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   needs:
     - "yaml_lint"
     - "jinja_lint"
@@ -150,6 +155,7 @@ molecule_test_debian_11:
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   needs:
     - "molecule_test_debian_12"
 
@@ -160,6 +166,7 @@ molecule_test_ubuntu_22:
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   needs:
     - "molecule_test_debian_11"
 
@@ -171,3 +178,4 @@ publish_release_candidate:
     - "molecule_test_debian_12"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
