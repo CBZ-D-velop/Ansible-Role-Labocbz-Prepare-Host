@@ -294,7 +294,7 @@ Here you can put your change to keep a trace of your work and decisions.
 * Fix idempotency
 * Added informations for UID and GID for user/groups
 * Added support for user password creation (on_create)
-* New CI
+* New CI, need wokr on tag and release
 
 ## Authors
 
