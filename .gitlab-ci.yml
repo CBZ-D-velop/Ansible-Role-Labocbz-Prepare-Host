@@ -102,12 +102,10 @@ ansible_lint:
     - MAJOR_VERSION=$((MAJOR_VERSION + 1))
     - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
     - RC_BRANCH_NAME="RC-$MAJOR_VERSION.0-$TIMESTAMP"
-    - REPOSITORY_URL="${CI_REPOSITORY_URL/https:\/\//https://$CICD_TOKEN_NAME:$CICD_TOKEN@}"
-    - echo $REPOSITORY_URL
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
-    - "git remote add rc_origin \"$REPOSITORY_URL\""
+    - "git remote add rc_origin \"$CI_REPOSITORY_URL\" || true"
     - "git checkout \"develop\""
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
