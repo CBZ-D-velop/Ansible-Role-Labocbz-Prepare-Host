@@ -1,20 +1,23 @@
 ---
-inv_prepare_host_users:
-  - login: "testuser"
-    group: "group1"
+inv_prepare_host__users:
+  - login: "root2"
+    group: "root2"
+    uid: 1000
+    gid: 1000
     sudoer: true
+    password: "secret"
 
-inv_prepare_host_system_users:
-  - login: "www-data"
-    group: "www-data"
-  - login: "node_exporter"
-    group: "node_exporter"
+inv_prepare_host__system_users:
+  - login: "www-data2"
+    group: "www-data2"
+    uid: 3333
+    gid: 3333
 
-inv_prepare_host_packages_removed:
+inv_prepare_host__packages_removed:
   - "vim*"
   - "vi*"
 
-inv_prepare_host_packages_installed:
+inv_prepare_host__packages_installed:
   - "rsync"
   - "curl"
   - "python3"
@@ -36,7 +39,6 @@ inv_prepare_host_packages_installed:
   - "procps"
   - "openssl"
   - "lsof"
-  - "initscripts"
   - "zip"
   - "tree"
   - "python3-apt"
@@ -48,3 +50,4 @@ inv_prepare_host_packages_installed:
   - "virtualenv"
   - "nethogs"
   - "iproute2"
+  - "iptables"
