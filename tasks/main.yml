@@ -10,7 +10,7 @@
     - name: "Remove packages and config files"
       when: prepare_host__packages_removed | default(false)
       changed_when: false == true
-      ignore_errors: true
+      failed_when: false
       ansible.builtin.package:
         state: absent
         name: "{{ prepare_host__packages_removed }}"
@@ -23,7 +23,7 @@
   ansible.builtin.group:
     name: "{{ user.group }}"
     state: present
-    gid: "{{ user.gid | default(false)}}"
+    gid: "{{ user.gid | default(false) }}"
 
 - name: "Create Users"
   when: prepare_host__users | default(false)
@@ -37,7 +37,7 @@
     update_password: on_create
     state: present
     append: true
-    uid: "{{ user.uid | default(false)}}"
+    uid: "{{ user.uid | default(false) }}"
 
 - name: "Import sudoers"
   when: prepare_host__users | default(false)
@@ -58,7 +58,7 @@
       ansible.builtin.group:
         name: "{{ user.group }}"
         state: present
-        gid: "{{ user.gid | default(false)}}"
+        gid: "{{ user.gid | default(false) }}"
 
     - name: "Add system user"
       loop: "{{ prepare_host__system_users }}"
@@ -72,7 +72,7 @@
         create_home: false
         append: true
         shell: "/sbin/nologin"
-        uid: "{{ user.uid | default(false)}}"
+        uid: "{{ user.uid | default(false) }}"
 
 - name: "Handle iptables rules"
   block:
