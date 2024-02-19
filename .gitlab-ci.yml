@@ -19,7 +19,6 @@ stages:
 variables:
   ANSIBLE_FORCE_COLOR: "true"
   PY_COLORS: "1"
-  DEFAULT_BRANCH: "develop"
   #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
@@ -48,7 +47,7 @@ yaml_lint:
     - yamllint -c ./.yamllint ./
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 jinja_lint:
   stage: lint
@@ -61,7 +60,7 @@ jinja_lint:
     - "[ -n \"$(find ./templates -name '*.j2')\" ] && j2lint ./templates/*.j2 --ignore S3 S7"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 ansible_lint:
   stage: lint
@@ -74,7 +73,7 @@ ansible_lint:
     - ansible-lint --config=./.ansible-lint --exclude molecule --exclude tests ./*
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
@@ -91,7 +90,7 @@ ansible_lint:
     - "molecule test --scenario-name $SCENARIO"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_ANSIBLE
@@ -116,9 +115,9 @@ ansible_lint:
     - "git config user.name \"$GITLAB_USER_EMAIL\""
     - "git remote remove rc_origin || true"
     - "git remote add rc_origin git@$REMOTE_ADDRESS"
-    - "git checkout \"$DEFAULT_BRANCH\""
+    - "git checkout \"develop\""
     - "git stash"
-    - "git pull origin \"$DEFAULT_BRANCH\""
+    - "git pull origin \"develop\""
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git push rc_origin \"$RC_BRANCH_NAME\""
@@ -133,14 +132,14 @@ molecule_test_debian_11:
   variables:
     SCENARIO: "cicd-debian-11"
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 molecule_test_debian_12:
   <<: *molecule_test
   variables:
     SCENARIO: "cicd-debian-12"
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
   needs:
     - "molecule_test_debian_11"
 
@@ -149,7 +148,7 @@ molecule_test_ubuntu_22:
   variables:
     SCENARIO: "cicd-ubuntu-22"
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
   needs:
     - "molecule_test_debian_12"
 
@@ -158,4 +157,4 @@ publish_release_candidate:
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
   rules:
-    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
+    - if: $CI_COMMIT_BRANCH == "develop"
