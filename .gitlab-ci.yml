@@ -17,8 +17,9 @@ stages:
 ###############################################################################
 
 variables:
-  ANSIBLE_FORCE_COLOR: 'true'
-  PY_COLORS: '1'
+  ANSIBLE_FORCE_COLOR: "true"
+  PY_COLORS: "1"
+  DEFAULT_BRANCH: "develop"
   #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
@@ -47,7 +48,7 @@ yaml_lint:
     - yamllint -c ./.yamllint ./
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
 
 jinja_lint:
   stage: lint
@@ -60,7 +61,7 @@ jinja_lint:
     - "[ -n \"$(find ./templates -name '*.j2')\" ] && j2lint ./templates/*.j2 --ignore S3 S7"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
 
 ansible_lint:
   stage: lint
@@ -73,7 +74,7 @@ ansible_lint:
     - ansible-lint --config=./.ansible-lint --exclude molecule --exclude tests ./*
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
 
 .molecule_test: &molecule_test
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
@@ -90,7 +91,7 @@ ansible_lint:
     - "molecule test --scenario-name $SCENARIO"
   allow_failure: false
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_ANSIBLE
@@ -102,24 +103,22 @@ ansible_lint:
     - MAJOR_VERSION=$((MAJOR_VERSION + 1))
     - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
     - RC_BRANCH_NAME="RC-$MAJOR_VERSION.0-$TIMESTAMP"
+    - REMOTE_ADDRESS=$(echo "$CI_REPOSITORY_URL" | awk -F@ '{print $2}')
     #
     - mkdir -p ~/.ssh
-    # Paste the PRIVATE key into a gitlab variable. Pay attention to the linebreak at the end when pasting
     - echo "$(cat $GITLAB_CI_SSH_PRIVATE_KEY)" | tr -d '\r' > ~/.ssh/id_rsa
     - echo "$(cat $GITLAB_CI_SSH_PUBLIC_KEY)" | tr -d '\r' > ~/.ssh/id_rsa.pub
     - chmod 400 ~/.ssh/id_rsa*
-    - cat ~/.ssh/id_rsa
-    - cat ~/.ssh/id_rsa.pub
     - eval "$(ssh-agent -s)"
     - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
     - "git remote remove rc_origin || true"
-    - "git remote add rc_origin git@gitlab.com:cbz-d-velop/public-ansible/ansible-role-labocbz-prepare-host.git"
-    - "git checkout \"develop\""
+    - "git remote add rc_origin git@$REMOTE_ADDRESS"
+    - "git checkout \"$DEFAULT_BRANCH\""
     - "git stash"
-    - "git pull origin \"develop\""
+    - "git pull origin \"$DEFAULT_BRANCH\""
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git push rc_origin \"$RC_BRANCH_NAME\""
@@ -134,14 +133,14 @@ molecule_test_debian_11:
   variables:
     SCENARIO: "cicd-debian-11"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
 
 molecule_test_debian_12:
   <<: *molecule_test
   variables:
     SCENARIO: "cicd-debian-12"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
   needs:
     - "molecule_test_debian_11"
 
@@ -150,7 +149,7 @@ molecule_test_ubuntu_22:
   variables:
     SCENARIO: "cicd-ubuntu-22"
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
   needs:
     - "molecule_test_debian_12"
 
@@ -159,4 +158,4 @@ publish_release_candidate:
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "$DEFAULT_BRANCH"
