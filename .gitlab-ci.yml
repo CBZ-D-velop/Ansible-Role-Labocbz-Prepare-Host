@@ -22,7 +22,7 @@ variables:
   #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
-  DOCKER_IMAGE_ALPINE_GIT: robincbz/alpine-git:ansible
+  DOCKER_IMAGE_ALPINE_GIT: robincbz/alpine-git:latest
   DOCKER_IMAGE_ANSIBLE_LINT: robincbz/alpine-ansiblelint:latest
   DOCKER_IMAGE_JINJA_LINT: robincbz/alpine-jinjalint:latest
   DOCKER_IMAGE_YAML_LINT: robincbz/alpine-yamllint:latest
