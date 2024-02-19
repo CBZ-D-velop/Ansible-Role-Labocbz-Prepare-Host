@@ -102,8 +102,7 @@ ansible_lint:
     - MAJOR_VERSION=$((MAJOR_VERSION + 1))
     - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
     - RC_BRANCH_NAME="RC-$MAJOR_VERSION.0-$TIMESTAMP"
-    - REMOTE_ADDRESS=$(echo "$CI_REPOSITORY_URL" | awk -F@ '{print $2}')
-    - REMOTE_ADDRESS=$(echo "$REMOTE_ADDRESS" | awk -F@ '{print $2}' | sed 's|/|:|')
+    - REMOTE_ADDRESS=$(echo "$CI_REPOSITORY_URL" | awk -F@ '{print $2}' | sed 's|/|:|')
     #
     - mkdir -p ~/.ssh
     - echo "$(cat $GITLAB_CI_SSH_PRIVATE_KEY)" | tr -d '\r' > ~/.ssh/id_rsa
