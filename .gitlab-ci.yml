@@ -125,6 +125,19 @@ ansible_lint:
     - "git add ."
     - "git push r_origin \"$RC_BRANCH_NAME\""
 
+.set_version_artefact: &set_version_artefact
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
+  stage: publish
+  before_script:
+    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
+    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
+    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
+  script:
+    - "echo \"VERSION=$VERSION\" >> VERSION.env"
+  artifacts:
+    reports:
+      dotenv: VERSION.env
+
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
@@ -185,7 +198,15 @@ publish_release_candidate:
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
+set_version_artefact:
+  <<: *set_version_artefact
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 publish_release:
   <<: *publish_release
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - job: "set_version_artefact"
+      artifacts: true
