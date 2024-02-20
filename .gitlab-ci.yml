@@ -123,7 +123,7 @@ ansible_lint:
     - "git checkout \"develop\""
     - "git stash"
     - "git pull origin \"develop\""
-    - "git checkout -b \"RC_BRANCH_NAME\""
+    - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git push r_origin \"$RC_BRANCH_NAME\""
 
