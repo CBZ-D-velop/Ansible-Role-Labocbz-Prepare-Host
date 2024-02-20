@@ -19,6 +19,7 @@ stages:
 variables:
   ANSIBLE_FORCE_COLOR: "true"
   PY_COLORS: "1"
+  DOCKER_IMAGE_RELEASE_CLI: "registry.gitlab.com/gitlab-org/release-cli:latest"
   #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
@@ -139,7 +140,7 @@ ansible_lint:
       dotenv: VERSION.env
 
 .publish_release: &publish_release
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
+  image: $DOCKER_IMAGE_RELEASE_CLI
   stage: publish
   before_script:
     - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
