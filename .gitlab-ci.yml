@@ -20,8 +20,6 @@ variables:
   ANSIBLE_FORCE_COLOR: "true"
   PY_COLORS: "1"
   #
-  DOCKER_IMAGE_RELEASE_CLI: gitlab-org/release-cli:latest
-  #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
   DOCKER_IMAGE_ALPINE_GIT: robincbz/alpine-git:latest
@@ -141,7 +139,7 @@ ansible_lint:
       dotenv: VERSION.env
 
 .publish_release: &publish_release
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_RELEASE_CLI
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
   script:
     - "echo \"RELEASE $VERSION From latest RC-$VERSION\""
