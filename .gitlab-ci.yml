@@ -146,8 +146,8 @@ ansible_lint:
   script:
     - "echo \"RELEASE $VERSION from latest RC-$VERSION\""
   release:
-    name: "$VERSION"
-    description: "RELEASE $VERSION from latest RC-$VERSION"
+    name: "v$VERSION"
+    description: "RELEASE v$VERSION from latest RC-$VERSION"
     tag_name: "$VERSION"
     ref: "$CI_COMMIT_SHA"
 
