@@ -96,18 +96,17 @@ ansible_lint:
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-.publish_release_branch_or_tag: &publish_release_branch_or_tag
+.publish_release_candidate: &publish_release_candidate
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
   before_script:
     - "REMOTE_ADDRESS=$(echo \"$CI_REPOSITORY_URL\" | awk -F@ '{print $2}' | sed 's|/|:|')"
-    - "TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')"
+    - "TIMESTAMP=$(date +'%Y.%m.%d-%H.%M.%S')"
     - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
     - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
-    - "[ \"$IS_RELEASE\" = true ] && VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
-    - "[ \"$IS_RELEASE\" = false ] && RC_BRANCH_NAME=\"RC-$LATEST_TAG-$TIMESTAMP\""
-    - "[ \"$IS_RELEASE\" = true ] && O_BRANCH_NAME=\"main\""
-    - "[ \"$IS_RELEASE\" = false ] && O_BRANCH_NAME=\"develop\""
+    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
+    - "RC_BRANCH_NAME=\"RC-$LATEST_TAG-$TIMESTAMP\""
+    #
     - "mkdir -p ~/.ssh"
     - "echo \"$(cat $GITLAB_CI_SSH_PRIVATE_KEY)\" | tr -d '\r' > ~/.ssh/id_rsa"
     - "echo \"$(cat $GITLAB_CI_SSH_PUBLIC_KEY)\" | tr -d '\r' > ~/.ssh/id_rsa.pub"
@@ -119,28 +118,25 @@ ansible_lint:
     - "git config user.name \"$GITLAB_USER_EMAIL\""
     - "git remote remove r_origin || true"
     - "git remote add r_origin git@$REMOTE_ADDRESS"
-    - "git checkout \"$O_BRANCH_NAME\""
+    - "git checkout \"develop\""
     - "git stash"
-    - "git pull origin \"$O_BRANCH_NAME\""
-    - "[ \"$IS_RELEASE\" = false ] && git checkout -b \"$RC_BRANCH_NAME\""
+    - "git pull origin \"develop\""
+    - "git checkout -b \"develop\""
     - "git add ."
-    - "[ \"$IS_RELEASE\" = false ] && git push r_origin \"$RC_BRANCH_NAME\""
-    - "[ \"$IS_RELEASE\" = true ] && echo \"VERSION=$VERSION\" >> VERSION.env"
-    - "[ \"$IS_RELEASE\" = true ] && git tag -a $VERSION -m \"RELEASE $VERSION From RC\" && git push r_origin $VERSION:main"
-    #
-  allow_failure: false
-  artifacts:
-      reports:
-        dotenv: "VERSION.env"
+    - "git push r_origin \"$RC_BRANCH_NAME\""
 
 .publish_release: &publish_release
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
+  before_script:
+    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
+    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
+    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
   script:
-    - "echo \"RELEASE $VERSION From RC\""
+    - "echo \"RELEASE $VERSION From latest RC-$VERSION\""
   release:
     name: ''
-    description: "RELEASE $VERSION From RC"
+    description: "RELEASE $VERSION From latest RC-$VERSION"
     tag_name: "$VERSION"
     ref: "$CI_COMMIT_SHA"
 
@@ -179,29 +175,17 @@ molecule_test_ubuntu_22:
   needs:
     - "molecule_test_debian_11"
 
-publish_release_candidate_branch:
-  <<: *publish_release_branch_or_tag
+publish_release_candidate:
+  <<: *publish_release_candidate
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
-    IS_RELEASE: "false"
+  allow_failure: false
   needs:
     - "molecule_test_debian_12"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-publish_release_tag:
-  <<: *publish_release_branch_or_tag
-  variables:
-    CI_JOB_TOKEN: $CICD_TOKEN
-    IS_RELEASE: "true"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-
 publish_release:
   <<: *publish_release
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-  needs:
-    - job: "publish_release_tag"
-      artifacts: true
-
