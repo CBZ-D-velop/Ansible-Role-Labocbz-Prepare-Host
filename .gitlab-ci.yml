@@ -100,29 +100,24 @@ ansible_lint:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
   before_script:
-    - REMOTE_ADDRESS=$(echo "$CI_REPOSITORY_URL" | awk -F@ '{print $2}' | sed 's|/|:|')
-    - TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')
-    - TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)
-    - LATEST_TAG=$(echo "$TAGS" | tail -n 1)
-    #
-    - [ "$IS_RELEASE" = true ] && MAJOR_VERSION=$(echo "$LATEST_TAG" | grep -oE '^[0-9]+')
-    - [ "$IS_RELEASE" = true ] && MINOR_VERSION=$(echo "$LATEST_TAG" | grep -oE '[0-9]+$')
-    - [ "$IS_RELEASE" = true ] && [ "$IS_MAJOR" = true ] && MAJOR_VERSION=$((MAJOR_VERSION + 1)) && MINOR_VERSION=0
-    - [ "$IS_RELEASE" = true ] && [ "$IS_MAJOR" = false ] && MINOR_VERSION=$((MINOR_VERSION + 1))
-    #
-    - 
-    - [ "$IS_RELEASE" = false ] && RC_BRANCH_NAME="RC-$LATEST_TAG-$TIMESTAMP"
-    - [ "$IS_RELEASE" = true ] && R_TAG="$MAJOR_VERSION.$MINOR_VERSION"
-    #
-    - [ "$IS_RELEASE" = true ] && O_BRANCH_NAME="main"
-    - [ "$IS_RELEASE" = false ] && O_BRANCH_NAME="develop"
-    #
-    - mkdir -p ~/.ssh
-    - echo "$(cat $GITLAB_CI_SSH_PRIVATE_KEY)" | tr -d '\r' > ~/.ssh/id_rsa
-    - echo "$(cat $GITLAB_CI_SSH_PUBLIC_KEY)" | tr -d '\r' > ~/.ssh/id_rsa.pub
-    - chmod 400 ~/.ssh/id_rsa*
-    - eval "$(ssh-agent -s)"
-    - ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts
+    - "REMOTE_ADDRESS=$(echo \"$CI_REPOSITORY_URL\" | awk -F@ '{print $2}' | sed 's|/|:|')"
+    - "TIMESTAMP=$(date +'%Y%m%d-%H.%M.%S')"
+    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
+    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
+    - "[ \"$IS_RELEASE\" = true ] && MAJOR_VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+')"
+    - "[ \"$IS_RELEASE\" = true ] && MINOR_VERSION=$(echo \"$LATEST_TAG\" | grep -oE '[0-9]+$')"
+    - "[ \"$IS_RELEASE\" = true ] && [ \"$IS_MAJOR\" = true ] && MAJOR_VERSION=$((MAJOR_VERSION + 1)) && MINOR_VERSION=0"
+    - "[ \"$IS_RELEASE\" = true ] && [ \"$IS_MAJOR\" = false ] && MINOR_VERSION=$((MINOR_VERSION + 1))"
+    - "[ \"$IS_RELEASE\" = false ] && RC_BRANCH_NAME=\"RC-$LATEST_TAG-$TIMESTAMP\""
+    - "[ \"$IS_RELEASE\" = true ] && R_TAG=\"$MAJOR_VERSION.$MINOR_VERSION\""
+    - "[ \"$IS_RELEASE\" = true ] && O_BRANCH_NAME=\"main\""
+    - "[ \"$IS_RELEASE\" = false ] && O_BRANCH_NAME=\"develop\""
+    - "mkdir -p ~/.ssh"
+    - "echo \"$(cat $GITLAB_CI_SSH_PRIVATE_KEY)\" | tr -d '\r' > ~/.ssh/id_rsa"
+    - "echo \"$(cat $GITLAB_CI_SSH_PUBLIC_KEY)\" | tr -d '\r' > ~/.ssh/id_rsa.pub"
+    - "chmod 400 ~/.ssh/id_rsa*"
+    - "eval \"$(ssh-agent -s)\""
+    - "ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts"
   script:
     - "git config user.email \"$GITLAB_USER_EMAIL\""
     - "git config user.name \"$GITLAB_USER_EMAIL\""
@@ -131,11 +126,8 @@ ansible_lint:
     - "git checkout \"$O_BRANCH_NAME\""
     - "git stash"
     - "git pull origin \"$O_BRANCH_NAME\""
-    #
     - "[ \"$IS_RELEASE\" = false ] && git checkout -b \"$RC_BRANCH_NAME\""
-    #
     - "git add ."
-    #
     - "[ \"$IS_RELEASE\" = false ] && git push r_origin \"$RC_BRANCH_NAME\""
     - "[ \"$IS_RELEASE\" = true ] && git tag -a $R_TAG -m \"RELEASE $R_TAG From RC\" && git push r_origin $R_TAG:main"
     #
@@ -180,7 +172,7 @@ publish_release_candidate:
   <<: *publish_release
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
-    IS_RELEASE: false
+    IS_RELEASE: "false"
   needs:
     - "molecule_test_debian_12"
   rules:
@@ -190,8 +182,8 @@ publish_minor_release:
   <<: *publish_release
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
-    IS_MAJOR: false
-    IS_RELEASE: true
+    IS_MAJOR: "false"
+    IS_RELEASE: "true"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^MINOR]/ && $CI_COMMIT_BRANCH == "main"'
 
@@ -199,7 +191,7 @@ publish_major_release:
   <<: *publish_release
   variables:
     CI_JOB_TOKEN: $CICD_TOKEN
-    IS_MAJOR: true
-    IS_RELEASE: true
+    IS_MAJOR: "true"
+    IS_RELEASE: "true"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^MAJOR]/ && $CI_COMMIT_BRANCH == "main"'
