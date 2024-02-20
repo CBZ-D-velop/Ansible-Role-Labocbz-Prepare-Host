@@ -107,7 +107,7 @@ ansible_lint:
     - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
     - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
     - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
-    - "RC_BRANCH_NAME=\"RC-$LATEST_TAG-$TIMESTAMP\""
+    - "RC_BRANCH_NAME=\"RC-$VERSION-$TIMESTAMP\""
     #
     - "mkdir -p ~/.ssh"
     - "echo \"$(cat $GITLAB_CI_SSH_PRIVATE_KEY)\" | tr -d '\r' > ~/.ssh/id_rsa"
@@ -166,16 +166,6 @@ molecule_test_debian_12:
     - "jinja_lint"
     - "ansible_lint"
 
-molecule_test_debian_11:
-  <<: *molecule_test
-  variables:
-    SCENARIO: "cicd-debian-11"
-  allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
-  needs:
-    - "molecule_test_debian_12"
-
 molecule_test_ubuntu_22:
   <<: *molecule_test
   variables:
@@ -184,7 +174,17 @@ molecule_test_ubuntu_22:
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
   needs:
-    - "molecule_test_debian_11"
+    - "molecule_test_debian_12"
+
+molecule_test_debian_11:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-debian-11"
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+  needs:
+    - "molecule_test_ubuntu_22"
 
 publish_release_candidate:
   <<: *publish_release_candidate
