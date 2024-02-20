@@ -20,6 +20,8 @@ variables:
   ANSIBLE_FORCE_COLOR: "true"
   PY_COLORS: "1"
   #
+  DOCKER_IMAGE_RELEASE_CLI: gitlab-org/release-cli:latest
+  #
   DOCKER_IMAGE_DOCKER_DIND_MOLECULE: robincbz/docker-dind-molecule:latest
   DOCKER_IMAGE_DOCKER_DIND_ANSIBLE: robincbz/docker-dind-ansible:latest
   DOCKER_IMAGE_ALPINE_GIT: robincbz/alpine-git:latest
@@ -121,7 +123,7 @@ ansible_lint:
     - "git checkout \"develop\""
     - "git stash"
     - "git pull origin \"develop\""
-    - "git checkout -b \"develop\""
+    - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git push r_origin \"$RC_BRANCH_NAME\""
 
@@ -139,12 +141,8 @@ ansible_lint:
       dotenv: VERSION.env
 
 .publish_release: &publish_release
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_RELEASE_CLI
   stage: publish
-  before_script:
-    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
-    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
-    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
   script:
     - "echo \"RELEASE $VERSION From latest RC-$VERSION\""
   release:
