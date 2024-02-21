@@ -31,6 +31,37 @@ variables:
   DOCKER_IMAGE_UBUNTU_22_ANSIBLE: robincbz/ubuntu-22-ansible:latest
   DOCKER_IMAGE_ALPINE_RELEASE_CLI: "robincbz/alpine-releasecli:latest"
 
+###############################################################################
+#################### EXTENDABLES
+###############################################################################
+
+.molecule_test: &molecule_test
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
+  stage: test
+  before_script:
+    - "export DOCKER_CLIENT_TIMEOUT=180"
+    - "export COMPOSE_HTTP_TIMEOUT=180"
+    - "docker login -u \"$NEXUS_REPOS_USERNAME\" -p \"$NEXUS_REPOS_PASSWORD\" \"http://$NEXUS_REPOS_DOCKER_REGISTRY\""
+    - "python3 -m compileall /usr/lib/python3 -qq"
+    - "cp ./.ansible.cfg /root/.ansible.cfg"
+    # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
+    # This probably happens due to gitlab-runner mounting the git repo into the container
+    - "chmod o-w ."
+    - "[ -f \"./molecule/$SCENARIO/requirements.yml\" ] && ansible-galaxy install -r ./molecule/$SCENARIO/requirements.yml --roles-path=./molecule/$SCENARIO/roles"
+  script:
+    - "molecule test --scenario-name $SCENARIO"
+  allow_failure: false
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+  needs:
+    - "yaml_lint"
+    - "jinja_lint"
+    - "ansible_lint"
+
+###############################################################################
+#################### CICD
+###############################################################################
+
 # As a GitLab ci, we use the default template :)
 sast:
   stage: gitlab-test
@@ -78,28 +109,35 @@ ansible_lint:
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-.molecule_test: &molecule_test
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_DOCKER_DIND_MOLECULE
-  stage: test
-  before_script:
-    - "export DOCKER_CLIENT_TIMEOUT=180"
-    - "export COMPOSE_HTTP_TIMEOUT=180"
-    - "docker login -u \"$NEXUS_REPOS_USERNAME\" -p \"$NEXUS_REPOS_PASSWORD\" \"http://$NEXUS_REPOS_DOCKER_REGISTRY\""
-    - "python3 -m compileall /usr/lib/python3 -qq"
-    - "cp ./.ansible.cfg /root/.ansible.cfg"
-    # Fix weird ansible bug: https://github.com/trailofbits/algo/issues/1637
-    # This probably happens due to gitlab-runner mounting the git repo into the container
-    - "chmod o-w ."
-    - "[ -f \"./molecule/$SCENARIO/requirements.yml\" ] && ansible-galaxy install -r ./molecule/$SCENARIO/requirements.yml --roles-path=./molecule/$SCENARIO/roles"
-  script:
-    - "molecule test --scenario-name $SCENARIO"
-  allow_failure: false
+molecule_test_debian_12:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-debian-12"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-.publish_release_candidate: &publish_release_candidate
+molecule_test_ubuntu_22:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-ubuntu-22"
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+
+molecule_test_debian_11:
+  <<: *molecule_test
+  variables:
+    SCENARIO: "cicd-debian-11"
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+
+publish_release_candidate:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
+  variables:
+    CI_JOB_TOKEN: $CICD_TOKEN
+  allow_failure: false
   before_script:
     - "REMOTE_ADDRESS=$(echo \"$CI_REPOSITORY_URL\" | awk -F@ '{print $2}' | sed 's|/|:|')"
     - "TIMESTAMP=$(date +'%Y.%m.%d-%H.%M.%S')"
@@ -125,8 +163,12 @@ ansible_lint:
     - "git checkout -b \"$RC_BRANCH_NAME\""
     - "git add ."
     - "git push r_origin \"$RC_BRANCH_NAME\""
+  needs:
+    - "molecule_test_debian_12"
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-.set_version_artefact: &set_version_artefact
+set_version_artefact:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
   stage: publish
   before_script:
@@ -139,8 +181,10 @@ ansible_lint:
   artifacts:
     reports:
       dotenv: VERSION.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
-.publish_release: &publish_release
+publish_release:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_RELEASE_CLI
   stage: publish
   script:
@@ -150,59 +194,6 @@ ansible_lint:
     description: "RELEASE v$VERSION from latest RC-$VERSION"
     tag_name: "v$VERSION"
     ref: "$CI_COMMIT_SHA"
-
-###############################################################################
-#################### CICD
-###############################################################################
-
-molecule_test_debian_12:
-  <<: *molecule_test
-  variables:
-    SCENARIO: "cicd-debian-12"
-  rules:
-    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
-  needs:
-    - "yaml_lint"
-    - "jinja_lint"
-    - "ansible_lint"
-
-molecule_test_ubuntu_22:
-  <<: *molecule_test
-  variables:
-    SCENARIO: "cicd-ubuntu-22"
-  allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
-  needs:
-    - "molecule_test_debian_12"
-
-molecule_test_debian_11:
-  <<: *molecule_test
-  variables:
-    SCENARIO: "cicd-debian-11"
-  allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
-  needs:
-    - "molecule_test_ubuntu_22"
-
-publish_release_candidate:
-  <<: *publish_release_candidate
-  variables:
-    CI_JOB_TOKEN: $CICD_TOKEN
-  allow_failure: false
-  needs:
-    - "molecule_test_debian_12"
-  rules:
-    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
-
-set_version_artefact:
-  <<: *set_version_artefact
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-
-publish_release:
-  <<: *publish_release
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
