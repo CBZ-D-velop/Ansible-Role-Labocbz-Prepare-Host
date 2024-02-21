@@ -167,6 +167,7 @@ publish_release_candidate:
     - "git push r_origin \"$RC_BRANCH_NAME\""
   needs:
     - "molecule_test_debian_12"
+    - "sonarqube-check"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
@@ -222,4 +223,3 @@ publish_release:
   needs:
     - job: "set_version_artefact"
       artifacts: true
-    - job: "sonarqube-check"
