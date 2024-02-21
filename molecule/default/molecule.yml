@@ -15,14 +15,8 @@ platforms:
     #  - "0.0.0.0:8181:8181/tcp"
     privileged: true
     pre_build_image: true
-    #tmpfs:
-    #  - "/run"
-    #  - "/tmp"
     volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    #cgroupns_mode: "host"
-    #cgroup_manager: "cgroupfs"
-    #storage_opt: overlay.mount_program=/usr/bin/fuse-overlayfs
     storage_driver: "overlay2"
     networks:
       - name: "molecule-default-prepare-host"
