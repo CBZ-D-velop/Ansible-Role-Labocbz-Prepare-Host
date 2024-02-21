@@ -202,6 +202,10 @@ sonarqube-check:
     - "sonar-scanner"
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+  needs:
+    #- "yaml_lint"
+    #- "jinja_lint"
+    - "ansible_lint"
 
 publish_release:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_RELEASE_CLI
