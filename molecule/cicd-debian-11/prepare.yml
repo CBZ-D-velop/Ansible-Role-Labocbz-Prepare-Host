@@ -1,7 +1,7 @@
 ---
 # if you have any prepararion task
 - name: "Prepare"
-  hosts: "all"
+  hosts: "all:&cicd-debian-11"
   gather_facts: true
   tasks:
 
