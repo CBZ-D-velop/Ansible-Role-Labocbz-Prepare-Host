@@ -186,6 +186,23 @@ set_version_artefact:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+sonarqube-check:
+  stage: sonarqube
+  image: 
+    name: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_SONAR_SCANNER_CLI
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - ".sonar/cache"
+  script: 
+    - "sonar-scanner"
+  rules:
+    - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
+
 publish_release:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_RELEASE_CLI
   stage: publish
@@ -201,18 +218,4 @@ publish_release:
   needs:
     - job: "set_version_artefact"
       artifacts: true
-
-sonarqube-check:
-  stage: sonarqube
-  image: 
-    name: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_SONAR_SCANNER_CLI
-    entrypoint: [""]
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - ".sonar/cache"
-  script: 
-    - "sonar-scanner"
+    - "sonarqube-check"
