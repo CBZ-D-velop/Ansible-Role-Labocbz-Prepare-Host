@@ -222,4 +222,4 @@ publish_release:
   needs:
     - job: "set_version_artefact"
       artifacts: true
-    - "sonarqube-check"
+    - job: "sonarqube-check"
