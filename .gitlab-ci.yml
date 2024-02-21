@@ -212,11 +212,11 @@ publish_release:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_RELEASE_CLI
   stage: publish
   script:
-    - "echo \"RELEASE v$VERSION from latest RC-$VERSION\""
+    - "echo \"RELEASE $VERSION from latest RC-$VERSION\""
   release:
-    name: "v$VERSION"
-    description: "RELEASE v$VERSION from latest RC-$VERSION"
-    tag_name: "v$VERSION"
+    name: "$VERSION"
+    description: "RELEASE $VERSION from latest RC-$VERSION"
+    tag_name: "$VERSION"
     ref: "$CI_COMMIT_SHA"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
