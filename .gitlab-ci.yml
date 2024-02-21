@@ -171,22 +171,6 @@ publish_release_candidate:
   rules:
     - if: '$CI_COMMIT_MESSAGE=~/^[^Merge]/ && $CI_COMMIT_BRANCH == "develop"'
 
-set_version_artefact:
-  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
-  stage: publish
-  before_script:
-    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
-    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
-    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
-  script:
-    - "echo \"RELEASE $VERSION from latest RC-$VERSION\""
-    - "echo \"VERSION=$VERSION\" >> VERSION.env"
-  artifacts:
-    reports:
-      dotenv: VERSION.env
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-
 sonarqube-check:
   stage: sonarqube
   image: 
@@ -208,6 +192,24 @@ sonarqube-check:
     #- "yaml_lint"
     #- "jinja_lint"
     - "ansible_lint"
+
+set_version_artefact:
+  image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_GIT
+  stage: publish
+  before_script:
+    - "TAGS=$(git ls-remote --tags origin | awk '{print $2}' | grep -oE 'refs/tags/[0-9.]+' | cut -d '/' -f 3 | sort -V)"
+    - "LATEST_TAG=$(echo \"$TAGS\" | tail -n 1)"
+    - "VERSION=$(echo \"$LATEST_TAG\" | grep -oE '^[0-9]+') && VERSION=$((VERSION + 1))"
+  script:
+    - "echo \"RELEASE $VERSION from latest RC-$VERSION\""
+    - "echo \"VERSION=$VERSION\" >> VERSION.env"
+  artifacts:
+    reports:
+      dotenv: VERSION.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - "sonarqube-check"
 
 publish_release:
   image: $NEXUS_REPOS_DOCKER_REGISTRY/$DOCKER_IMAGE_ALPINE_RELEASE_CLI
