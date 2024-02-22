@@ -76,19 +76,30 @@
 - name: "Handle system users"
   when: prepare_host__system_users | default(false)
   block:
-    - name: "Create Groups"
+    - name: "Create Groups, with gid"
       loop: "{{ prepare_host__system_users }}"
       loop_control:
         loop_var: user
+      when: user.gid | default(false)
       ansible.builtin.group:
         name: "{{ user.group }}"
         state: present
-        gid: "{{ user.gid | default(false) }}"
+        gid: "{{ user.gid }}"
 
-    - name: "Add system user"
+    - name: "Create Groups, no gid"
       loop: "{{ prepare_host__system_users }}"
       loop_control:
         loop_var: user
+      when: not (user.gid | default(false))
+      ansible.builtin.group:
+        name: "{{ user.group }}"
+        state: present
+
+    - name: "Add system user, with uid"
+      loop: "{{ prepare_host__system_users }}"
+      loop_control:
+        loop_var: user
+      when: not (user.uid | default(false))
       ansible.builtin.user:
         name: "{{ user.login }}"
         group: "{{ user.group }}"
@@ -97,7 +108,6 @@
         create_home: false
         append: true
         shell: "/sbin/nologin"
-        uid: "{{ user.uid | default(false) }}"
 
 - name: "Handle iptables rules"
   block:
