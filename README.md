@@ -296,6 +296,7 @@ Here you can put your change to keep a trace of your work and decisions.
 * Added support for user password creation (on_create)
 * New CI, need work on tag and releases
 * CI use now Sonarqube
+* You can set or not the uid/gid
 
 ## Authors
 
