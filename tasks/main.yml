@@ -40,29 +40,54 @@
         state: absent
         name: "{{ prepare_host__packages_removed }}"
 
-- name: "Create Groups with GID"
+- name: "Handle system users"
   when: prepare_host__users | default(false)
-  loop: "{{ prepare_host__users }}"
-  loop_control:
-    loop_var: user
-  ansible.builtin.group:
-    name: "{{ user.group }}"
-    state: present
-    gid: "{{ user.gid | default(false) }}"
+  block:
+    - name: "Create Groups, with gid"
+      when: user.uid | default(false)
+      loop: "{{ prepare_host__users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.group:
+        name: "{{ user.group }}"
+        state: present
+        gid: "{{ user.gid }}"
 
-- name: "Create Users"
-  when: prepare_host__users | default(false)
-  loop: "{{ prepare_host__users }}"
-  loop_control:
-    loop_var: user
-  ansible.builtin.user:
-    name: "{{ user.login }}"
-    group: "{{ user.group }}"
-    password: "{{ user.password | password_hash('sha512') }}"
-    update_password: on_create
-    state: present
-    append: true
-    uid: "{{ user.uid | default(false) }}"
+    - name: "Create Groups, no gid"
+      when: not (user.uid | default(false))
+      loop: "{{ prepare_host__users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.group:
+        name: "{{ user.group }}"
+        state: present
+
+    - name: "Create Users, with uid"
+      when: user.uid | default(false)
+      loop: "{{ prepare_host__users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.user:
+        name: "{{ user.login }}"
+        group: "{{ user.group }}"
+        password: "{{ user.password | password_hash('sha512') }}"
+        update_password: on_create
+        state: present
+        append: true
+        uid: "{{ user.uid }}"
+
+    - name: "Create Users, no uid"
+      when: not (user.uid | default(false))
+      loop: "{{ prepare_host__users }}"
+      loop_control:
+        loop_var: user
+      ansible.builtin.user:
+        name: "{{ user.login }}"
+        group: "{{ user.group }}"
+        password: "{{ user.password | password_hash('sha512') }}"
+        update_password: on_create
+        state: present
+        append: true
 
 - name: "Import sudoers"
   when: prepare_host__users | default(false)
