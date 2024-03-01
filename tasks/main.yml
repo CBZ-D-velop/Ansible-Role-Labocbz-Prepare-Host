@@ -145,6 +145,7 @@
         shell: "/sbin/nologin"
 
 - name: "Handle iptables rules"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
   block:
     - name: "Install package: iptables-persistent"
       changed_when: false == true
