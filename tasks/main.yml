@@ -189,8 +189,7 @@
         state: present
 
 - name: "Set the timezone on the host"
-  register: output
-  changed_when: output.rc != 0
+  changed_when: false
   failed_when: false
   ansible.builtin.shell: |
     echo "{{ prepare_host__timezone }}" > /etc/timezone && \
