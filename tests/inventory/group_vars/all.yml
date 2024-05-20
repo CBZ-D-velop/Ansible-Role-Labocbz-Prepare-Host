@@ -1,4 +1,5 @@
 ---
+
 inv_prepare_host__users:
   - login: "root2"
     group: "root2"

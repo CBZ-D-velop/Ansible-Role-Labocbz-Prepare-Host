@@ -8,6 +8,7 @@
         - "labocbz.prepare_host"
       vars:
         prepare_host__users: "{{ inv_prepare_host__users }}"
+        prepare_host__timezone: "{{ inv_prepare_host__timezone }}"
         prepare_host__packages_removed: "{{ inv_prepare_host__packages_removed }}"
         prepare_host__packages_installed: "{{ inv_prepare_host__packages_installed }}"
         prepare_host__system_users: "{{ inv_prepare_host__system_users }}"

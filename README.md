@@ -79,7 +79,6 @@ yamllint -c ./.yamllint .
 ansible-lint --config=./.ansible-lint .
 
 # Execute and test your role
-molecule lint
 molecule create
 molecule list
 molecule converge
@@ -102,6 +101,8 @@ Some vars a required to run this role:
 
 ```YAML
 ---
+prepare_host__timezone: "Europe/Paris"
+
 #prepare_host__users:
 #  - login: "root"
 #    group: "root"
@@ -167,6 +168,8 @@ In order to surchage vars, you have multiples possibilities but for mains cases 
 ```YAML
 # From inventory
 ---
+inv_prepare_host__timezone: "Europe/Paris"
+
 inv_prepare_host__users:
   - login: "root2"
     group: "root2"
@@ -238,6 +241,7 @@ To run this role, you can copy the molecule/default/converge.yml playbook and ad
     - "labocbz.prepare_host"
   vars:
     prepare_host__users: "{{ inv_prepare_host__users }}"
+    prepare_host__timezone: "{{ inv_prepare_host__timezone }}"
     prepare_host__packages_removed: "{{ inv_prepare_host__packages_removed }}"
     prepare_host__packages_installed: "{{ inv_prepare_host__packages_installed }}"
     prepare_host__system_users: "{{ inv_prepare_host__system_users }}"
@@ -305,6 +309,7 @@ Here you can put your change to keep a trace of your work and decisions.
 * Change CICD vars convention
 * New workers
 * Removed all automation based on branch
+* Added Timezone setting
 
 ## Authors
 

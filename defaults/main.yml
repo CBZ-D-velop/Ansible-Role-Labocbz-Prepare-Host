@@ -1,4 +1,6 @@
 ---
+prepare_host__timezone: "Europe/Paris"
+
 #prepare_host__users:
 #  - login: "root"
 #    group: "root"
