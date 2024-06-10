@@ -52,8 +52,8 @@
         state: absent
         name: "{{ prepare_host__packages_removed }}"
 
-- name: "Handle system users"
-  when: prepare_host__users | default(false)
+- name: "Handle users"
+  when: prepare_host__users is defined
   block:
     - name: "Create Groups, with gid"
       when: user.uid | default(false)
@@ -109,7 +109,7 @@
     mode: 0440
 
 - name: "Handle system users"
-  when: prepare_host__system_users | default(false)
+  when: prepare_host__system_users is defined
   block:
     - name: "Create Groups, with gid"
       loop: "{{ prepare_host__system_users }}"
