@@ -1,4 +1,6 @@
 ---
+inv_prepare_host__timezone: "Europe/Paris"
+
 inv_prepare_host__users:
   - login: "root2"
     group: "root2"
